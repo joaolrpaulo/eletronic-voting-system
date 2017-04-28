@@ -7,7 +7,7 @@
     "scripts": {
         "start": "webpack-dev-server",
         "test": "echo \"Error: no test specified\" && exit 1",
-        "dev": "webpack-dev-server --content-base src --inline --hot"
+        "dev": "webpack-dev-server --host 192.168.0.104 --content-base src --inline --hot"
     },
     "dependencies": {
         "babel-core": "^6.23.1",
