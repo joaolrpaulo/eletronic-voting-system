@@ -1,0 +1,8 @@
+*.db
+*.json
+.DS_Store
+.idea
+__pycache__
+articles
+certs
+node_modules
