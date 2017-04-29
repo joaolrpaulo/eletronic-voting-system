@@ -1,19 +1,13 @@
-import os
-
 from flask import Flask
+from sqlalchemy import create_engine
 
 
 app = Flask(__name__)
-app.config.from_object(__name__)
-
-app.config.update(dict(
-    DATABASE = os.path.join(app.root_path, 'voting-server.db'),
-    SECRET_KEY = 'voting-server',
-    USERNAME = 'admin',
-    PASSWORD = 'admin'
-))
-app.config.from_json('config/config.json', silent = True)
+db = create_engine('sqlite:///database/voting-server.db')
+with open('database/schema.sql', mode = 'r') as schema, db.begin() as conn:
+    conn.execute(schema.read())
 
 
 # noinspection PyUnresolvedReferences
-from app import errors, users, database
+from app import errors
+from app import views
