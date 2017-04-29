@@ -1,5 +1,7 @@
 import React from 'react';
 
+import * as MainPageActions from './../Actions/mainPageActions.js';
+
 export default class RegisterForm extends React.Component {
     constructor () {
         super();
@@ -8,6 +10,7 @@ export default class RegisterForm extends React.Component {
 
     toggleForm () {
         this.clicked = !this.clicked;
+        MainPageActions.toggleLoggedInState();
     }
 
     getClickedRegister () {

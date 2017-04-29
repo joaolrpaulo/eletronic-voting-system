@@ -14,6 +14,8 @@ class MainPageStore extends EventEmitter {
 
     setLoggingInState () {
         this.loggingIn = !this.loggingIn;
+        console.log('changed');
+        this.emit('change');
     }
 
     handleActions (action) {

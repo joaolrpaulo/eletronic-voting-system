@@ -2,8 +2,30 @@ import React from 'react';
 
 import RegisterForm from './RegisterForm.js';
 import LoginForm from './LoginForm.js';
+import MainPageStore from './../Stores/mainPageStore.js';
 
 export default class MainPage extends React.Component {
+    constructor () {
+        super();
+        this.state = {
+            loggingIn: true
+        };
+    }
+
+    componentWillMount () {
+        MainPageStore.on('change', this.getLoggingInState.bind(this));
+    }
+
+    componentWillUnmount () {
+        MainPageStore.removeListener('change', this.getLoggingInState.bind(this));
+    }
+
+    getLoggingInState () {
+        this.setState({
+            loggingIn: MainPageStore.getLoggingInState()
+        });
+    }
+
     render () {
         return (
             <div class="view hm-black-strong">
@@ -21,9 +43,9 @@ export default class MainPage extends React.Component {
                             </div>
                             <div class="col-lg-6">
                                 {
-                                    (RegisterForm.getClickedRegister())
-                                    ? <RegisterForm/>
-                                    : <LoginForm/>
+                                    (this.state.loggingIn)
+                                    ? <LoginForm/>
+                                    : <RegisterForm/>
                                 }
                             </div>
                         </div>
