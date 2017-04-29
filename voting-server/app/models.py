@@ -35,7 +35,7 @@ class Voter:
         return {}
 
     def hash_password(self):
-        self.hash = pbkdf2_sha512.encrypt(self.password, rounds = 200000, salt_size = 16)
+        self.hash = pbkdf2_sha512.encrypt(self.password, rounds=200000, salt_size=16)
 
     def verify_password(self, password):
         return pbkdf2_sha512.verify(password, self.hash)
@@ -64,3 +64,21 @@ class Voters:
     def delete(voter_id):
         conn = db.connect()
         return conn.execute("DELETE FROM voters WHERE voter_id = ?", [voter_id])
+
+
+class Tokens:
+    @staticmethod
+    def add(voter_id, token, expiration_ts):
+        conn = db.connect()
+        return conn.execute("INSERT INTO tokens(voter_id, token, expiration_ts) VALUES(?, ?, ?)", [voter_id, token, expiration_ts])
+
+    @staticmethod
+    def get(token):
+        conn = db.connect()
+        last_token = conn.execute("SELECT * FROM tokens WHERE token = ? AND expiration_ts <> 0", [token]).cursor
+        return last_token.fetchone()
+
+    @staticmethod
+    def invalidate(token):
+        conn = db.connect()
+        return conn.execute("UPDATE tokens SET expiration_ts = 0 WHERE token = ? AND expiration_ts <> 0", [token])

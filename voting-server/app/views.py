@@ -1,15 +1,16 @@
 import sqlalchemy
+import time
 
-from app import app
+from app import app, secretContext
 from app import models
-from app.crypto import Encryption
+from app.crypto import Encryption, TTL
 from flask import abort
 from flask import jsonify
 from flask import request
 from flask_cors import cross_origin
 
 
-@app.route("/register", methods = ['POST'])
+@app.route("/register", methods=['POST'])
 @cross_origin()
 def register():
     if request.headers['Content-Type'] == 'application/json':
@@ -25,7 +26,7 @@ def register():
     return abort(415)
 
 
-@app.route("/login", methods = ['POST'])
+@app.route("/login", methods=['POST'])
 @cross_origin()
 def login():
     if request.headers['Content-Type'] == 'application/json':
@@ -35,22 +36,35 @@ def login():
         if voter_id and voter_password:
             voter = models.Voters.get(voter_id)
             if voter and voter.verify_password(voter_password):
-                # TODO: Generate Token
-                e = Encryption('secretToken')
+                time_now = int(time.time())
+                jwt = Encryption(secretContext)
 
-                return jsonify({'token': e.encrypt({'voter_id': voter_id})})
+                token = jwt.encrypt({'voter_id': voter_id})
+
+                models.Tokens.add(voter_id, token, time_now + TTL)
+
+                return jsonify({
+                    'token' : token
+                })
 
         if voter:
             return abort(401)
         else:
             return abort(404)
+
     return abort(415)
 
 
-@app.route("/logout", methods = ['POST'])
+@app.route("/logout", methods=['POST'])
 @cross_origin()
 def logout():
     if request.headers['Content-Type'] == 'application/json':
-        print(request.json)
-        return jsonify({'message': 'success'})
+        token = request.json.get('token')
+
+        if not models.Tokens.get(token):
+            return abort(404)
+        else:
+            models.Tokens.invalidate(token)
+            return jsonify({'message': 'success'})
+
     return abort(415)

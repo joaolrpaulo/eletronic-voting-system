@@ -1,7 +1,8 @@
 import re
 
-def matcher(data, regExp):
-    return True if re.match(regExp, data) else False
+
+def matcher(data, regexp):
+    return True if re.match(regexp, data) else False
 
 
 def voter_id(data):

@@ -5,7 +5,7 @@ from werkzeug.exceptions import default_exceptions
 
 
 def json_error(error):
-    response = jsonify(message = str(error))
+    response = jsonify(message=str(error))
     response.status_code = error.code if isinstance(error, HTTPException) else 500
     return response
 
