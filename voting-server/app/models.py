@@ -1,7 +1,6 @@
-from passlib.hash import pbkdf2_sha512
-
 from app import db
 from app import validators
+from passlib.hash import pbkdf2_sha512
 
 
 class Voter:
@@ -29,7 +28,11 @@ class Voter:
                 missing.append(name)
             elif not func(field):
                 malformed.append(name)
-        return missing, malformed
+        if missing:
+            return {"missing": missing}
+        if malformed:
+            return {"malformed": malformed}
+        return {}
 
     def hash_password(self):
         self.hash = pbkdf2_sha512.encrypt(self.password, rounds = 200000, salt_size = 16)
