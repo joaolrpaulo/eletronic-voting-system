@@ -1,9 +1,11 @@
 from jose import jwt
 
+TTL = 300
+
 
 class Encryption:
-    def __init__(self, file):
-        self.secret = open(file, 'r').read()
+    def __init__(self, secret):
+        self.secret = secret
 
     def encrypt(self, data = {}, algorithm = 'HS256'):
         return jwt.encode(data, self.secret, algorithm = algorithm)
