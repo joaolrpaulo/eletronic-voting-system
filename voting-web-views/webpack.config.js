@@ -5,6 +5,7 @@ var webpack = require('webpack');
 module.exports = {
     context: path.join(__dirname, 'src'),
     devtool: debug ? 'inline-sourcemap' : null,
+    devServer: {disableHostCheck: true},
     entry: './js/client.js',
     module: {
         loaders: [
