@@ -28,7 +28,7 @@ export default class MainPage extends React.Component {
 
     render () {
         return (
-            <div class="view hm-black-strong">
+            <div class="view-fullscreen hm-black-strong">
                 <div class="full-bg-img flex-center">
                     <div class="container">
                         <div class="row" id="home">

@@ -5,6 +5,7 @@ import './../styles/styles.scss';
 
 import Navbar from './Components/Navbar.js';
 import MainPage from './Components/MainPage.js';
+import VotingPage from './Components/VotingPage.js';
 
 new WOW().init();
 
