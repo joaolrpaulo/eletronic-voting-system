@@ -1,7 +1,10 @@
 import sqlalchemy
+
 from app import app
 from app import models
-from flask import request, jsonify, abort
+from flask import abort
+from flask import jsonify
+from flask import request
 
 
 @app.route("/register", methods = ['POST'])
@@ -10,22 +13,14 @@ def register():
         voter = models.Voter(request.json)
         if voter.ok():
             voter.hash_password()
-        else:
-            print(voter.error())
-        # v = request.json
-        # if validator.validate_voter(v):
-        #     hash = ''
-        #     salt = ''
-        #     try:
-        #         models.Voters.add(v['voter_id'], hash, salt, v['name'], v['email'], v['address'])
-        #         return jsonify({'message': 'success'})
-        #     except sqlalchemy.exc.IntegrityError:
-        #         return abort(409)
-        # else:
-        #     return abort(400)
-        return jsonify({"test": "test"})
-    else:
-        return abort(415)
+            try:
+                # TODO: add voter to the database
+                pass
+            except sqlalchemy.exc.IntegrityError:
+                return abort(409)
+            return jsonify({'message': 'success'})
+        return jsonify(voter.error()), 400
+    return abort(415)
 
 
 @app.route("/login", methods = ['POST'])
@@ -33,10 +28,12 @@ def login():
     if request.headers['Content-Type'] == 'application/json':
         print(request.json)
         return jsonify({'message': 'success'})
-    else:
-        return abort(415)
+    return abort(415)
 
 
 @app.route("/logout", methods = ['POST'])
 def logout():
-    return abort(403)
+    if request.headers['Content-Type'] == 'application/json':
+        print(request.json)
+        return jsonify({'message': 'success'})
+    return abort(415)
