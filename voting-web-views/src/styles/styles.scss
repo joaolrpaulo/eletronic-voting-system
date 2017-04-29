@@ -1,53 +1,54 @@
 html,
 body,
+header,
 .view {
     height: 100vh;
     width: 100vw;
 }
+/* Navigation*/
 
 .navbar {
-    background-color: black;
-}
-
-.scrolling-navbar {
-    -webkit-transition: background .5s ease-in-out, padding .5s ease-in-out;
-    -moz-transition: background .5s ease-in-out, padding .5s ease-in-out;
-    transition: background .5s ease-in-out, padding .5s ease-in-out;
+    background-color: transparent;
 }
 
 .top-nav-collapse {
-    background-color: #3c4f74;
-}
-
-footer.page-footer {
-    background-color: #3c4f74;
-    margin-top: 2rem;
+    background-color: #3F729B;
 }
 
 @media only screen and (max-width: 768px) {
     .navbar {
-        background-color: #1C2331;
+        background-color: #3F729B;
     }
 }
-
-.flex-center {
-    color: #fff;
-}
+/*Intro*/
 
 .view {
-    background: url("http://mdbootstrap.com/img/Photos/Horizontal/Work/full page/img%20(2).jpg")no-repeat center center fixed;
+    background: url("https://mdbootstrap.com/img/Photos/Horizontal/People/12-col/img%20(61).jpg")no-repeat center center fixed;
     -webkit-background-size: cover;
     -moz-background-size: cover;
     -o-background-size: cover;
     background-size: cover;
 }
 
-.card {
-    width: 25%;
+@media (max-width: 768px) {
+    .full-bg-img,
+    .view {
+        height: auto;
+        position: relative;
+    }
 }
 
-.fa {
-    color: black;
+.description {
+    padding-top: 25%;
+    padding-bottom: 3rem;
+    color: #fff
+}
+
+@media (max-width: 992px) {
+    .description {
+        padding-top: 7rem;
+        text-align: center;
+    }
 }
 
 @import "login_form";
