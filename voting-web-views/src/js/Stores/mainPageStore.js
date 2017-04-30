@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events';
 import axios from 'axios';
-import { browserHistory } from 'react-router';
+import { hashHistory } from 'react-router';
 
 import dispatcher from './../dispatcher.js';
 import { axiosConfig } from './../configs.js';
@@ -29,6 +29,7 @@ class MainPageStore extends EventEmitter {
             .then((response) => {
                 User.setToken(response.data.token).toggleLoggedIn();
                 console.log(User.getToken());
+                hashHistory.push('/voting');
             })
             .catch((error) => {
                 console.log(error);

@@ -6,7 +6,6 @@ import User from './../User.js';
 
 export default class Card extends React.Component {
     request () {
-        console.log(axiosConfig.baseUrl + '/user');
         axios.get(axiosConfig.baseUrl + '/user', axiosConfig.get(User.getToken()))
              .then((response) => {
                  console.log(response);
