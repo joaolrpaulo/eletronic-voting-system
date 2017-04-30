@@ -1,0 +1,19 @@
+{
+    "database": {
+        "schema": "database/schema.sql",
+        "location": "database/voting-server.db"
+    },
+
+    "jwt": {
+        "secret": "certs/jwt-secret.key"
+    },
+
+    "https": {
+        "crt": "certs/voting-server.crt",
+        "key": "certs/voting-server.key"
+    },
+
+    "tokens": {
+        "ttl": 300
+    }
+}
