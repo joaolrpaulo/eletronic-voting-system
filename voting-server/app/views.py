@@ -39,7 +39,10 @@ def login():
                 time_now = int(time.time())
                 jwt = Encryption(secretContext)
 
-                token = jwt.encrypt({'voter_id': voter_id})
+                token = jwt.encrypt({
+                    'voter_id': voter_id,
+                    'expiration_ts': time_now + TTL
+                })
 
                 models.Tokens.add(voter_id, token, time_now + TTL)
 
@@ -60,11 +63,42 @@ def login():
 def logout():
     if request.headers['Content-Type'] == 'application/json':
         token = request.json.get('token')
+        token_db = models.Tokens.get(token)
 
-        if not models.Tokens.get(token):
-            return abort(404)
-        else:
+        if token_db:
+            if token_db['expiration_ts'] <= int(time.time()):
+                models.Tokens.invalidate(token)
+
+            if token_db['expiration_ts'] == 0:
+                return jsonify({'message': 'token already expired'})
+
             models.Tokens.invalidate(token)
             return jsonify({'message': 'success'})
+        else:
+            return abort(404)
 
     return abort(415)
+
+
+@app.route("/user", methods=['POST'])
+@cross_origin()
+def user():
+    if request.headers['Content-Type'] == 'application/json':
+        token = request.json.get('token')
+        token_db = models.Tokens.get(token)
+
+        if token_db:
+            if token_db['expiration_ts'] <= int(time.time()) or token_db['expiration_ts'] == 0:
+                return abort(401)
+
+            voter_id = token_db['voter_id']
+            user = models.Voters.get(voter_id)
+
+            return jsonify({
+                'voter_id': user.voter_id,
+                'name': user.name,
+                'email': user.email,
+                'city': user.city
+            })
+        else:
+            return abort(404)

@@ -5,6 +5,10 @@ from flask_cors import CORS
 
 # Initialize the App
 app = Flask(__name__)
+
+# Remove sorted objects
+app.config['JSON_SORT_KEYS'] = False
+
 # CORS Support
 app.config['CORS_HEADERS'] = 'Content-Type'
 cors = CORS(app)
