@@ -26,25 +26,25 @@ export default class RegisterForm extends React.Component {
 
     render () {
         return (
-            <div class="card wow fadeInRight" data-wow-duration="2.5s">
+            <div class="card" data-wow-duration="2.5s">
                 <div class="card-block">
                     <div class="text-center">
-                        <h3>Login:</h3>
+                        <h3>Login</h3>
                         <hr/>
                     </div>
                     <div class="md-form">
                         <i class="fa fa-user prefix"></i>
-                        <input type="text" value="135500243" id="username" class="form-control"/>
+                        <input type="text" id="username" class="form-control"/>
                         <label for="form3">Your username</label>
                     </div>
                     <div class="md-form">
                         <i class="fa fa-lock prefix"></i>
-                        <input type="password" value="Li-1231231231" id="password" class="form-control"/>
+                        <input type="password" id="password" class="form-control"/>
                         <label for="form4">Your password</label>
                     </div>
 
                     <div class="text-center">
-                        <button onClick={this.formSubmit.bind(this)} class="btn btn-primary btn-rounded btn-lg">Login</button>
+                        <button onClick={this.formSubmit.bind(this)} class="btn btn-primary btn-rounded btn-lg waves-effect">Login</button>
                         <br/>
                         <br/>
                         <fieldset class="form-group">

@@ -15,28 +15,32 @@ export default class RegisterForm extends React.Component {
 
     render () {
         return (
-            <div class="card wow fadeInRight" data-wow-duration="2.5s">
+            <div class="card" data-wow-duration="2.5s">
                 <div class="card-block">
                     <div id="form-header">
-                        <i onClick={this.toggleLoggingInState.bind(this)} id="left-arrow" class="fa fa-2x fa-arrow-circle-left refix"></i>
-                        <h3 id="register-header-text" class="text-center">Register:</h3>
+                        <i onClick={this.toggleLoggingInState.bind(this)} id="left-arrow" class="fa fa-2x fa-arrow-circle-left refix waves-effect"></i>
+                        <h3 id="register-header-text" class="text-center">Register</h3>
                     </div>
                     <hr/>
+
                     <div class="md-form">
-                        <i class="fa fa-user prefix"></i>
+                        <i class="fa fa-id-card prefix"></i>
                         <input type="text" id="username" class="form-control"/>
                         <label for="form3">Voter ID</label>
                     </div>
+
                     <div class="md-form">
                         <i class="fa fa-user prefix"></i>
                         <input type="text" id="username" class="form-control"/>
                         <label for="form3">Your name</label>
                     </div>
+
                     <div class="md-form">
-                        <i class="fa fa-user prefix"></i>
+                        <i class="fa fa-building prefix"></i>
                         <input type="text" id="username" class="form-control"/>
                         <label for="form3">City</label>
                     </div>
+
                     <div class="md-form">
                         <i class="fa fa-envelope prefix"></i>
                         <input type="email" id="email" class="form-control"/>
@@ -50,7 +54,7 @@ export default class RegisterForm extends React.Component {
                     </div>
 
                     <div class="text-center">
-                        <button onClick={this.formSubmit.bind(this)} class="btn btn-danger btn-lg">Sign up</button>
+                        <button onClick={this.formSubmit.bind(this)} class="btn btn-danger btn-lg waves-effect">Sign up</button>
                     </div>
 
                 </div>
