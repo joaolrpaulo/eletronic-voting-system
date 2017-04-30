@@ -3,6 +3,9 @@ from app import validators
 from passlib.hash import pbkdf2_sha512
 
 
+def cursor_to_json(query, data):
+    return dict(zip(tuple(query.keys()), data))
+
 class Voter:
     def __init__(self, data):
         self.voter_id = data.get('voter_id')
@@ -56,7 +59,7 @@ class Voters:
         user = query.cursor.fetchone()
 
         if user:
-            return Voter(dict(zip(tuple(query.keys()), user)))
+            return Voter(cursor_to_json(query, user))
         else:
             return None
 
@@ -75,10 +78,17 @@ class Tokens:
     @staticmethod
     def get(token):
         conn = db.connect()
-        last_token = conn.execute("SELECT * FROM tokens WHERE token = ? AND expiration_ts <> 0", [token]).cursor
-        return last_token.fetchone()
+        query = conn.execute("SELECT * FROM tokens WHERE token = ?", [token])
+
+        token_user = query.cursor.fetchone()
+
+        if token_user:
+            return cursor_to_json(query, token_user)
+        else:
+            return None
+
 
     @staticmethod
     def invalidate(token):
         conn = db.connect()
-        return conn.execute("UPDATE tokens SET expiration_ts = 0 WHERE token = ? AND expiration_ts <> 0", [token])
+        return conn.execute("UPDATE tokens SET expiration_ts = 0 WHERE token = ?", [token])
