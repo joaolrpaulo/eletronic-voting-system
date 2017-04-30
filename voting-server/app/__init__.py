@@ -1,5 +1,4 @@
 from flask import Flask
-from flask_cors import CORS
 from sqlalchemy import create_engine
 
 
@@ -8,10 +7,6 @@ app = Flask(__name__)
 
 # Remove sorted objects
 app.config['JSON_SORT_KEYS'] = False
-
-# CORS support
-app.config['CORS_HEADERS'] = 'Content-Type'
-cors = CORS(app)
 
 
 # Connect to database
