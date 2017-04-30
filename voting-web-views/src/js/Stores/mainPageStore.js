@@ -1,16 +1,15 @@
 import { EventEmitter } from 'events';
 import axios from 'axios';
-import https from 'https';
+import { browserHistory } from 'react-router';
 
 import dispatcher from './../dispatcher.js';
+import { axiosConfig } from './../configs.js';
+import User from './../User.js';
 
 class MainPageStore extends EventEmitter {
     constructor () {
         super();
         this.loggingIn = true;
-        this.instance = {
-            headers: {'Content-Type': 'application/json'}
-        };
     }
 
     getLoggingInState () {
@@ -19,17 +18,17 @@ class MainPageStore extends EventEmitter {
 
     setLoggingInState () {
         this.loggingIn = !this.loggingIn;
-        console.log('changed');
         this.emit('change');
     }
 
     logInUser (data) {
-        axios.post('https://192.168.0.184/login', {
+        axios.post(axiosConfig.baseUrl + '/login', {
             voter_id: data.username,
             password: data.password
-        }, this.instance)
+        }, axiosConfig.post)
             .then((response) => {
-                console.log(response);
+                User.setToken(response.data.token).toggleLoggedIn();
+                console.log(User.getToken());
             })
             .catch((error) => {
                 console.log(error);

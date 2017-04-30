@@ -1,6 +1,21 @@
 import React from 'react';
+import axios from 'axios';
+
+import { axiosConfig } from './../configs.js';
+import User from './../User.js';
 
 export default class Card extends React.Component {
+    request () {
+        console.log(axiosConfig.baseUrl + '/user');
+        axios.get(axiosConfig.baseUrl + '/user', axiosConfig.get(User.getToken()))
+             .then((response) => {
+                 console.log(response);
+             })
+             .catch((error) => {
+                 console.log(error);
+             });
+    }
+
     render () {
         return (
             <div class="card voting-card">
