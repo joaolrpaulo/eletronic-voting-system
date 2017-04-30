@@ -24,7 +24,8 @@ with open('database/voters.sql', mode = 'r') as schema, db.begin() as conn:
 with open('database/tokens.sql', mode='r') as schema, db.begin() as conn:
     conn.execute(schema.read())
 
-secretContext = open('certs/secret.jwt').read()
+with open('certs/secret.jwt', mode='r') as secret:
+    secretContext = secret.read()
 
 # noinspection PyUnresolvedReferences
 from app import errors
