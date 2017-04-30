@@ -65,8 +65,9 @@ def login():
 @app.route("/logout", methods=['POST'])
 @cross_origin()
 def logout():
-    if request.headers['Content-Type'] == 'application/json':
-        token = request.json.get('token')
+    has_auth = request.headers.get('Authorization')
+    if has_auth and has_auth.startswith('Bearer '):
+        token = has_auth.split('Bearer ')[1]
         token_db = models.Tokens.get(token)
 
         if token_db:
@@ -78,17 +79,18 @@ def logout():
 
             models.Tokens.invalidate(token)
             return jsonify({'message': 'success'})
-        else:
-            return abort(404)
+
+        return abort(404)
 
     return abort(415)
 
 
-@app.route("/user", methods=['POST'])
+@app.route("/user", methods=['GET'])
 @cross_origin()
 def user():
-    if request.headers['Content-Type'] == 'application/json':
-        token = request.json.get('token')
+    has_auth = request.headers.get('Authorization')
+    if has_auth and has_auth.startswith('Bearer '):
+        token = has_auth.split('Bearer ')[1]
         token_db = models.Tokens.get(token)
 
         if token_db:
@@ -106,3 +108,5 @@ def user():
             })
         else:
             return abort(404)
+
+    return abort(400)
