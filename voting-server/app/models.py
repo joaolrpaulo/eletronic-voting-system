@@ -4,8 +4,8 @@ from app import db
 from app import validators
 
 
-def cursor_to_json(query, data):
-    return dict(zip(tuple(query.keys()), data))
+def cursor_to_json(query):
+    return [dict(zip(tuple(query.keys()), data)) for data in query.cursor]
 
 
 class Voter:
@@ -56,13 +56,9 @@ class Voters:
     def get(voter_id):
         conn = db.connect()
         query = conn.execute("SELECT * FROM voters WHERE voter_id = ?", [voter_id])
+        cursor = cursor_to_json(query)
 
-        user = query.cursor.fetchone()
-
-        if user:
-            return Voter(cursor_to_json(query, user))
-        else:
-            return None
+        return Voter(cursor[0]) if len(cursor) else None
 
     @staticmethod
     def delete(voter_id):
@@ -80,13 +76,9 @@ class Tokens:
     def get(token):
         conn = db.connect()
         query = conn.execute("SELECT * FROM tokens WHERE token = ?", [token])
+        cursor = cursor_to_json(query)
 
-        token_user = query.cursor.fetchone()
-
-        if token_user:
-            return cursor_to_json(query, token_user)
-        else:
-            return None
+        return cursor[0] if len(cursor) else None
 
     @staticmethod
     def invalidate(token):
@@ -97,3 +89,41 @@ class Tokens:
     def invalidate_all(voter_id):
         conn = db.connect()
         return conn.execute("UPDATE tokens SET expiration_ts = 0 WHERE voter_id = ? AND expiration_ts <> 0", [voter_id])
+
+class Polls:
+    @staticmethod
+    def add_poll(title, body, image, begin_ts, end_ts, available_at):
+        conn = db.connect()
+        with db.begin() as conn:
+            print()
+            conn.execute("INSERT INTO polls(title, body, image, begin_ts, end_ts, available_at) " +
+                            "VALUES (?, ?, ?, ?, ?, ?)", [title, body, image, begin_ts, end_ts, available_at])
+            return_id = conn.execute("SELECT last_insert_rowid() FROM polls").cursor.fetchone()
+
+        return return_id
+
+    @staticmethod
+    def add_voter_to_poll(voter_id, poll_id):
+        conn = db.connect()
+        return conn.execute("INSERT INTO voters_polls(voter_id, poll_id) VALUES(?, ?)", [voter_id, poll_id])
+
+    @staticmethod
+    def add_items_to_poll(poll_id, title, description):
+        conn = db.connect()
+        return conn.execute("INSERT INTO items_polls(poll_id, title, description) VALUES(?, ?, ?)", [poll_id, title, description])
+
+    @staticmethod
+    def get_polls(token):
+        conn = db.connect()
+        query = conn.execute("SELECT * FROM polls WHERE id in (SELECT poll_id FROM voters_polls WHERE voter_id in (SELECT voter_id FROM tokens WHERE token = ?))", [token])
+        polls = cursor_to_json(query)
+
+        return polls if polls else None
+
+    @staticmethod
+    def get_items_poll(poll_id):
+        conn = db.connect()
+        query = conn.execute("SELECT * FROM items_polls WHERE poll_id = ?", [poll_id])
+        items = cursor_to_json(query)
+
+        return items if items else None

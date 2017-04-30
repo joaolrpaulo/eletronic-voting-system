@@ -14,7 +14,7 @@ from app.crypto import Encryption
 @app.route("/register", methods=['POST'])
 @cross_origin()
 def register():
-    if request.headers['Content-Type'] == 'application/json':
+    if request.headers.get('Content-Type') == 'application/json':
         voter = models.Voter(request.json)
         if voter.ok():
             voter.hash_password()
@@ -30,7 +30,7 @@ def register():
 @app.route("/login", methods=['POST'])
 @cross_origin()
 def login():
-    if request.headers['Content-Type'] == 'application/json':
+    if request.headers.get('Content-Type') == 'application/json':
         voter_id = request.json.get('voter_id')
         voter_password = request.json.get('password')
 
@@ -107,6 +107,32 @@ def user():
                 'city': user.city
             })
         else:
-            return abort(404)
+          return abort(404)
 
     return abort(400)
+
+@app.route("/polls", methods=['GET', 'POST'])
+@cross_origin()
+def polls():
+    has_auth = request.headers.get('Authorization')
+    if has_auth and has_auth.startswith('Bearer '):
+        token = has_auth.split('Bearer ')[1]
+
+        if request.method == 'POST':
+            if request.headers.get('Content-Type') == 'application/json':
+
+                title = request.json.get('title')
+                description = request.json.get('description')
+                image = request.json.get('image')
+                begin_ts = request.json.get('begin_ts')
+                end_ts = request.json.get('end_ts')
+                available_at = request.json.get('available_at')
+
+                poll_id = models.Polls.add_poll(title, description, image, begin_ts, end_ts, available_at)[0]
+
+                return jsonify({ 'poll_id': poll_id })
+        elif request.method == 'GET':
+            return jsonify(models.Polls.get_polls(token))
+
+    return abort(400)
+

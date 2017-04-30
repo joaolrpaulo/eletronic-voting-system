@@ -3,6 +3,7 @@ import sys
 
 from flask import Flask
 from sqlalchemy import create_engine
+from flask_cors import CORS
 
 from app import configs
 
@@ -10,7 +11,7 @@ from app import configs
 # Initialize the app
 app = Flask(__name__)
 app.config['JSON_SORT_KEYS'] = False
-
+CORS(app)
 
 # Parse app configs
 config = configs.parser(sys.argv[1])
