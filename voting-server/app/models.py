@@ -81,6 +81,11 @@ class Tokens:
         return cursor[0] if len(cursor) else None
 
     @staticmethod
+    def revalidate(token, expiration_ts):
+        conn = db.connect()
+        return conn.execute("UPDATE tokens SET expiration_ts = ? WHERE token = ?", [expiration_ts, token])
+
+    @staticmethod
     def invalidate(token):
         conn = db.connect()
         return conn.execute("UPDATE tokens SET expiration_ts = 0 WHERE token = ?", [token])

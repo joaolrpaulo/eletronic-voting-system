@@ -94,11 +94,13 @@ def user():
         token_db = models.Tokens.get(token)
 
         if token_db:
-            if token_db['expiration_ts'] <= int(time.time()) or token_db['expiration_ts'] == 0:
+            time_now = int(time.time())
+            if token_db['expiration_ts'] <= time_now or token_db['expiration_ts'] == 0:
                 return abort(401)
 
             voter_id = token_db['voter_id']
             user = models.Voters.get(voter_id)
+            models.Tokens.revalidate(token, time_now + config.tokens.ttl)
 
             return jsonify({
                 'voter_id': user.voter_id,
@@ -117,6 +119,8 @@ def polls():
     has_auth = request.headers.get('Authorization')
     if has_auth and has_auth.startswith('Bearer '):
         token = has_auth.split('Bearer ')[1]
+        time_now = int(time.time())
+        models.Tokens.revalidate(token, time_now + config.tokens.ttl)
 
         if request.method == 'POST':
             if request.headers.get('Content-Type') == 'application/json':
