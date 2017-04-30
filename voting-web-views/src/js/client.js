@@ -12,6 +12,11 @@ import PrivateAreaComponent from './Components/PrivateAreaComponent';
 import { init } from './configs.js';
 init();
 
+window.onerror = function (msg, url, ln) {
+    console.log('here');
+    return true;
+};
+
 export default class Layout extends React.Component {
     render () {
         return (

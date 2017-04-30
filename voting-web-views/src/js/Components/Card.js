@@ -5,12 +5,12 @@ import { axiosMethods } from './../configs.js';
 export default class Card extends React.Component {
     request () {
         axiosMethods.get('/user')
-             .then((response) => {
-                 console.log(response);
-             })
-             .catch((error) => {
-                 console.log(error);
-             });
+                    .then((response) => {
+                        console.log(response);
+                    })
+                    .catch((error) => {
+                        console.log(error);
+                    });
     }
 
     render () {
