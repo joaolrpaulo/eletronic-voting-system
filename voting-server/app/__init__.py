@@ -1,5 +1,6 @@
-import sys
 import sqlite3
+import sys
+
 from flask import Flask
 from sqlalchemy import create_engine
 
