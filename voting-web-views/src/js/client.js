@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import { IndexRoute, Router, hashHistory, Route } from 'react-router';
 
 import './../styles/styles.scss';
 
@@ -14,10 +15,18 @@ export default class Layout extends React.Component {
         return (
             <div>
                 <Navbar/>
-                <VotingPage/>
+                {this.props.children}
             </div>
         );
     }
 }
 
-ReactDOM.render(<Layout/>, document.getElementById('app'));
+const app = document.getElementById('app');
+ReactDOM.render(
+    <Router history={hashHistory}>
+        <Route path='/' component={Layout}>
+            <IndexRoute component={MainPage}/>
+            <Route path='voting' component={VotingPage}/>
+        </Route>
+    </Router>,
+    app);
