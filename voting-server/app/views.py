@@ -6,9 +6,9 @@ from flask import jsonify
 from flask import request
 from flask_cors import cross_origin
 
-from app import app, jwt_secret
+from app import app, config
 from app import models
-from app.crypto import Encryption, TTL
+from app.crypto import Encryption
 
 
 @app.route("/register", methods=['POST'])
@@ -41,14 +41,14 @@ def login():
                 models.Tokens.invalidate_all(voter_id)
 
                 time_now = int(time.time())
-                jwt = Encryption(jwt_secret)
+                jwt = Encryption(config.jwt.secret)
 
                 token = jwt.encrypt({
                     'voter_id': voter_id,
-                    'expiration_ts': time_now + TTL
+                    'expiration_ts': time_now + config.tokens.ttl
                 })
 
-                models.Tokens.add(voter_id, token, time_now + TTL)
+                models.Tokens.add(voter_id, token, time_now + config.tokens.ttl)
 
                 return jsonify({
                     'token' : token
