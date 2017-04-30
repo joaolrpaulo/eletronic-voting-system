@@ -92,3 +92,8 @@ class Tokens:
     def invalidate(token):
         conn = db.connect()
         return conn.execute("UPDATE tokens SET expiration_ts = 0 WHERE token = ?", [token])
+
+    @staticmethod
+    def invalidate_all(voter_id):
+        conn = db.connect()
+        return conn.execute("UPDATE tokens SET expiration_ts = 0 WHERE voter_id = ? AND expiration_ts <> 0", [voter_id])

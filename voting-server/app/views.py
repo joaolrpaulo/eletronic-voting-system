@@ -36,6 +36,9 @@ def login():
         if voter_id and voter_password:
             voter = models.Voters.get(voter_id)
             if voter and voter.verify_password(voter_password):
+                # invalidate all previous tokens from the requested user
+                models.Tokens.invalidate_all(voter_id)
+
                 time_now = int(time.time())
                 jwt = Encryption(secretContext)
 
