@@ -14,7 +14,7 @@ from app.crypto import Encryption
 @app.route("/register", methods=['POST'])
 @cross_origin()
 def register():
-    if request.headers['Content-Type'] == 'application/json':
+    if request.headers.get('Content-Type') == 'application/json':
         voter = models.Voter(request.json)
         if voter.ok():
             voter.hash_password()
@@ -30,7 +30,7 @@ def register():
 @app.route("/login", methods=['POST'])
 @cross_origin()
 def login():
-    if request.headers['Content-Type'] == 'application/json':
+    if request.headers.get('Content-Type') == 'application/json':
         voter_id = request.json.get('voter_id')
         voter_password = request.json.get('password')
 
@@ -65,8 +65,9 @@ def login():
 @app.route("/logout", methods=['POST'])
 @cross_origin()
 def logout():
-    if request.headers['Content-Type'] == 'application/json':
-        token = request.json.get('token')
+    has_auth = request.headers.get('Authorization')
+    if has_auth and has_auth.startswith('Bearer '):
+        token = has_auth.split('Bearer ')[1]
         token_db = models.Tokens.get(token)
 
         if token_db:
@@ -78,25 +79,28 @@ def logout():
 
             models.Tokens.invalidate(token)
             return jsonify({'message': 'success'})
-        else:
-            return abort(404)
+
+        return abort(404)
 
     return abort(415)
 
 
-@app.route("/user", methods=['POST'])
+@app.route("/user", methods=['GET'])
 @cross_origin()
 def user():
-    if request.headers['Content-Type'] == 'application/json':
-        token = request.json.get('token')
+    has_auth = request.headers.get('Authorization')
+    if has_auth and has_auth.startswith('Bearer '):
+        token = has_auth.split('Bearer ')[1]
         token_db = models.Tokens.get(token)
 
         if token_db:
-            if token_db['expiration_ts'] <= int(time.time()) or token_db['expiration_ts'] == 0:
+            time_now = int(time.time())
+            if token_db['expiration_ts'] <= time_now or token_db['expiration_ts'] == 0:
                 return abort(401)
 
             voter_id = token_db['voter_id']
             user = models.Voters.get(voter_id)
+            models.Tokens.revalidate(token, time_now + config.tokens.ttl)
 
             return jsonify({
                 'voter_id': user.voter_id,
@@ -105,4 +109,34 @@ def user():
                 'city': user.city
             })
         else:
-            return abort(404)
+          return abort(404)
+
+    return abort(400)
+
+@app.route("/polls", methods=['GET', 'POST'])
+@cross_origin()
+def polls():
+    has_auth = request.headers.get('Authorization')
+    if has_auth and has_auth.startswith('Bearer '):
+        token = has_auth.split('Bearer ')[1]
+        time_now = int(time.time())
+        models.Tokens.revalidate(token, time_now + config.tokens.ttl)
+
+        if request.method == 'POST':
+            if request.headers.get('Content-Type') == 'application/json':
+
+                title = request.json.get('title')
+                description = request.json.get('description')
+                image = request.json.get('image')
+                begin_ts = request.json.get('begin_ts')
+                end_ts = request.json.get('end_ts')
+                available_at = request.json.get('available_at')
+
+                poll_id = models.Polls.add_poll(title, description, image, begin_ts, end_ts, available_at)[0]
+
+                return jsonify({ 'poll_id': poll_id })
+        elif request.method == 'GET':
+            return jsonify(models.Polls.get_polls(token))
+
+    return abort(400)
+
