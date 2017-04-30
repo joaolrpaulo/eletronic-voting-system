@@ -32,6 +32,6 @@ ReactDOM.render(
                 <Route path='voting' component={VotingPage}/>
             </Route>
         </Route>
-        <Route path="*" component={MainPage}/>
+        <Route path="*" component={MainPage} status={404}/>
     </Router>,
     app);
