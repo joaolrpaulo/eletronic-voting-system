@@ -1,13 +1,14 @@
-import sqlalchemy
 import time
 
-from app import app, secretContext
-from app import models
-from app.crypto import Encryption, TTL
+import sqlalchemy
 from flask import abort
 from flask import jsonify
 from flask import request
 from flask_cors import cross_origin
+
+from app import app, jwt_secret
+from app import models
+from app.crypto import Encryption, TTL
 
 
 @app.route("/register", methods=['POST'])
@@ -40,7 +41,7 @@ def login():
                 models.Tokens.invalidate_all(voter_id)
 
                 time_now = int(time.time())
-                jwt = Encryption(secretContext)
+                jwt = Encryption(jwt_secret)
 
                 token = jwt.encrypt({
                     'voter_id': voter_id,
