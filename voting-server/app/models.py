@@ -1,10 +1,12 @@
+from passlib.hash import pbkdf2_sha512
+
 from app import db
 from app import validators
-from passlib.hash import pbkdf2_sha512
 
 
 def cursor_to_json(query, data):
     return dict(zip(tuple(query.keys()), data))
+
 
 class Voter:
     def __init__(self, data):
@@ -14,7 +16,6 @@ class Voter:
         self.name = data.get('name')
         self.email = data.get('email')
         self.city = data.get('city')
-
         self.functions = [validators.voter_id, validators.password, validators.name, validators.email, validators.city]
 
     def ok(self):
@@ -86,7 +87,6 @@ class Tokens:
             return cursor_to_json(query, token_user)
         else:
             return None
-
 
     @staticmethod
     def invalidate(token):
