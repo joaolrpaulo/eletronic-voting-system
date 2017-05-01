@@ -6,16 +6,10 @@ CREATE TABLE IF NOT EXISTS voters(
     city VARCHAR(255) NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS voters_polls(
-    voter_id INTEGER NOT NULL,
-    poll_id INTEGER NOT NULL,
-    PRIMARY KEY(voter_id, poll_id)
-);
-
 CREATE TABLE IF NOT EXISTS polls(
     id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
     title VARCHAR(255) NOT NULL,
-    body VARCHAR(255) NOT NULL,
+    description VARCHAR(255) NOT NULL,
     image VARCHAR(255) NOT NULL,
     begin_ts INTEGER NOT NULL,
     end_ts INTEGER NOT NULL,
@@ -27,6 +21,12 @@ CREATE TABLE IF NOT EXISTS items_polls(
     poll_id INTEGER NOT NULL,
     title VARCHAR(255) NOT NULL,
     description VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS voters_polls(
+    voter_id INTEGER NOT NULL,
+    poll_id INTEGER NOT NULL,
+    PRIMARY KEY(voter_id, poll_id)
 );
 
 CREATE TABLE IF NOT EXISTS tokens(
