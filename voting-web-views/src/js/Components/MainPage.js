@@ -44,7 +44,7 @@ export default class MainPage extends React.Component {
                                 <div class="description">
                                     <h2 class="h2-responsive wow fadeInLeft">Electronic Voting System</h2>
                                     <hr class="hr-dark wow fadeInLeft"/>
-                                    <p class="wow fadeInLeft" data-wow-duration="2.5s">Write something here</p>
+                                    <p class="wow fadeInLeft" data-wow-duration="2.5s">asdsdsadksadaskdasldkjasldkjaskdjasdjasdjasd asdasd as dsandasdsdsadksadaskdasldkjasldkjaskdjasdjasdjasd asdasd as dsandWrite something hereWrite something here</p>
                                     <br/>
                                     <a class="btn btn-outline-white btn-lg wow fadeInLeft waves-effect" data-wow-delay="0.7s">About</a>
                                 </div>
