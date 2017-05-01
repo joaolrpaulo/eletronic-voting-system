@@ -5,9 +5,12 @@ export const axiosConfig = {
         headers: {'Content-Type': 'application/json'}
     },
     get: function (token) {
-        console.log('Bearer ' + token);
         return {
             headers: {'Authorization': 'Bearer ' + token}
         };
     }
+};
+
+export const init = () => {
+    new WOW().init();
 };

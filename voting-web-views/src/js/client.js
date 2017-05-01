@@ -9,12 +9,8 @@ import MainPage from './Components/MainPage.js';
 import VotingPage from './Components/VotingPage.js';
 import PrivateAreaComponent from './Components/PrivateAreaComponent';
 
-new WOW().init();
-
-window.onerror = function (msg, url, ln) {
-    console.log('here');
-    return true;
-};
+import { init } from './configs.js';
+init();
 
 export default class Layout extends React.Component {
     render () {
