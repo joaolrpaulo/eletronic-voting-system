@@ -5,7 +5,48 @@
 }
 
 .voting-card {
-    width: 400px;
-    height: 500px;
+    width: 300px;
+    height: 400px;
     margin-right: 20px;
+    margin-left: 20px;
+    margin-bottom: 20px;
+    margin-top: 20px;
+    text-align: center;
+    border-radius: 20px;
+}
+
+.margin-top {
+    margin-top: 70px;
+}
+
+.container-cards {
+    width: 90% !important;
+}
+
+.container {
+    margin: auto;
+    display: -webkit-flex;
+    display: flex;
+    -webkit-align-items: center;
+    align-items: center;
+    -webkit-justify-content: center;
+    justify-content: center;
+    /* You can set flex-wrap and flex-direction individually */
+    -webkit-flex-direction: row;
+    flex-direction: row;
+    -webkit-flex-wrap: wrap;
+    flex-wrap: wrap;
+    /* Or do it all in one line with flex flow */
+    -webkit-flex-flow: row wrap;
+    flex-flow: row wrap;
+    /* tweak the where items line up on the row */
+    /* valid values are: flex-start, flex-end, space-between, space-around, stretch */
+    -webkit-align-content: flex-end;
+    align-content: flex-end;
+    background-repeat: no-repeat !important;
+    background-attachment: fixed !important;
+}
+
+.round-image {
+    border-radius: 20px;
 }

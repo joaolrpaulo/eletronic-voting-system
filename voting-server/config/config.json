@@ -1,4 +1,16 @@
 {
+    "endpoint": {
+        "host": "0.0.0.0",
+        "port": 443
+    },
+
+    "debug": true,
+
+    "https": {
+        "crt": "certs/voting-server.crt",
+        "key": "certs/voting-server.key"
+    },
+
     "database": {
         "schema": "database/schema.sql",
         "location": "database/voting-server.db"
@@ -6,11 +18,6 @@
 
     "jwt": {
         "secret": "certs/jwt-secret.key"
-    },
-
-    "https": {
-        "crt": "certs/voting-server.crt",
-        "key": "certs/voting-server.key"
     },
 
     "tokens": {

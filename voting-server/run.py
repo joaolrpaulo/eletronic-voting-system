@@ -1,11 +1,12 @@
 #!/usr/bin/python3.5
 
 from app import app
+from app import config
+
 
 app.run(
-    host='0.0.0.0',
-    port=443,
-    debug=True,
-    ssl_context=('certs/voting-server.crt', 'certs/voting-server.key')
+    host = config.endpoint.host,
+    port = config.endpoint.port,
+    debug = config.debug,
+    ssl_context = (config.https.crt, config.https.key)
 )
-
