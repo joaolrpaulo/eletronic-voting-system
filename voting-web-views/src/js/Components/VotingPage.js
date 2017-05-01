@@ -10,11 +10,11 @@ export default class VotingPage extends React.Component {
         this.state = {
             polls: []
         };
-        VotingPageActions.retrievePolls();
     }
 
     componentWillMount () {
         VotingPageStore.on('change', this.getAll.bind(this));
+        VotingPageActions.retrievePolls();
     }
 
     componentWillUnmount () {
@@ -23,13 +23,13 @@ export default class VotingPage extends React.Component {
 
     getAll () {
         this.setState({
-            polls: VotingPageStore.getPolls()
+            polls: VotingPageStore.getAll()
         });
-        console.log('changed polls', this.state.polls);
     }
 
     render () {
         const polls = this.state.polls.map(poll => {
+            console.log(poll);
             return <Card/>;
         });
 

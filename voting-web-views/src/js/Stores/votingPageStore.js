@@ -14,8 +14,8 @@ class VotingPageStore extends EventEmitter {
     retrievePolls () {
         axios.get(axiosConfig.baseUrl + '/polls', axiosConfig.get(User.getToken()))
             .then((response) => {
-                console.log(response.data);
                 this.polls = response.data;
+                this.emit('change');
             })
             .catch((error) => {
                 console.log(error);
@@ -23,7 +23,7 @@ class VotingPageStore extends EventEmitter {
     }
 
     getAll () {
-        return this.polls();
+        return this.polls;
     }
 
     handleActions (action) {
