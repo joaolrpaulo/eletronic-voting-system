@@ -14,7 +14,7 @@ export default class Layout extends React.Component {
         return (
             <div>
                 <Navbar/>
-                <MainPage/>
+                <VotingPage/>
             </div>
         );
     }

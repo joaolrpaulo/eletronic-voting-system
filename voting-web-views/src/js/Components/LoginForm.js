@@ -26,7 +26,7 @@ export default class RegisterForm extends React.Component {
 
     render () {
         return (
-            <div class="card" data-wow-duration="2.5s">
+            <div class="card submission-forms" data-wow-duration="2.5s">
                 <div class="card-block">
                     <div class="text-center">
                         <h3>Login</h3>

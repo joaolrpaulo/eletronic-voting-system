@@ -15,7 +15,7 @@ export default class RegisterForm extends React.Component {
 
     render () {
         return (
-            <div class="card" data-wow-duration="2.5s">
+            <div class="card submission-forms" data-wow-duration="2.5s">
                 <div class="card-block">
                     <div id="form-header">
                         <i onClick={this.toggleLoggingInState.bind(this)} id="left-arrow" class="fa fa-2x fa-arrow-circle-left refix waves-effect"></i>

@@ -6,21 +6,6 @@ header,
     width: 100vw;
 }
 
-/* Navigation*/
-
-.navbar {
-    background-color: transparent;
-}
-
-.top-nav-collapse {
-    background-color: #3F729B;
-}
-
-@media only screen and (max-width: 768px) {
-    .navbar {
-        background-color: #3F729B;
-    }
-}
 /*Intro*/
 
 .view-fullscreen {
@@ -56,3 +41,5 @@ header,
 @import "register_form";
 @import "gradients";
 @import "votingPage";
+@import "navbar";
+@import "mainPage";
