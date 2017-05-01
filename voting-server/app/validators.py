@@ -7,13 +7,13 @@ def voter_id(data):
 
 
 def password(data):
-    # Minimum 8 chars, 1 upper, 1 lower, 1 symbol, 1 numeric
-    return bool(re.match('^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$', str(data)))
+    # Minimum 8 chars, Maximum, 64 chars, 1 upper, 1 lower, 1 symbol, 1 numeric
+    return bool(re.match('^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,64}$', str(data)))
 
 
 def name(data):
     # Portuguese names
-    return bool(re.match('^[A-Za-zÀ-ú]{1,20}( [A-Za-zÀ-ú]{1,20}){1,20}$', str(data)))
+    return bool(re.match('^[A-Za-zÀ-ú ]{1,150}$', str(data)))
 
 
 def email(data):
@@ -23,4 +23,20 @@ def email(data):
 
 def city(data):
     # Portuguese cities
-    return bool(re.match('^[A-Za-zÀ-ú]+( [A-Za-zÀ-ú]+)*$', str(data)))
+    return bool(re.match('^[A-Za-zÀ-ú ]{1,100}$', str(data)))
+
+
+def title(data):
+    return bool(re.match('^[ -~]{1,50}$', str(data)))
+
+
+def description(data):
+    return bool(re.match('^[ -~]{1,1000}$', str(data)))
+
+
+def image(data):
+    return bool(re.match('^\/[\w+/]+\.(png|jpg|jpeg)$', str(data)))
+
+
+def ts(data):
+    return bool(re.match('^[0-9]{1,10}$', str(data)))

@@ -48,16 +48,19 @@ def login():
                     'expiration_ts': time_now + config.tokens.ttl
                 })
 
-                models.Tokens.add(voter_id, token, time_now + config.tokens.ttl)
+                models.Tokens.add(voter_id, token,
+                                  time_now + config.tokens.ttl)
 
                 return jsonify({
-                    'token' : token
+                    'token': token
                 })
 
-        if voter:
-            return abort(401)
-        else:
+            if voter:
+                return abort(401)
+
             return abort(404)
+
+        return abort(400)
 
     return abort(415)
 
@@ -95,7 +98,9 @@ def user():
 
         if token_db:
             time_now = int(time.time())
-            if token_db['expiration_ts'] <= time_now or token_db['expiration_ts'] == 0:
+            if token_db.get('expiration_ts') <= time_now or\
+               token_db.get('expiration_ts') == 0:
+
                 return abort(401)
 
             voter_id = token_db['voter_id']
@@ -108,10 +113,11 @@ def user():
                 'email': user.email,
                 'city': user.city
             })
-        else:
-          return abort(404)
+
+        return abort(404)
 
     return abort(400)
+
 
 @app.route("/polls", methods=['GET', 'POST'])
 @cross_origin()
@@ -125,18 +131,22 @@ def polls():
         if request.method == 'POST':
             if request.headers.get('Content-Type') == 'application/json':
 
-                title = request.json.get('title')
-                description = request.json.get('description')
-                image = request.json.get('image')
-                begin_ts = request.json.get('begin_ts')
-                end_ts = request.json.get('end_ts')
-                available_at = request.json.get('available_at')
+                poll = models.Poll(request.json)
 
-                poll_id = models.Polls.add_poll(title, description, image, begin_ts, end_ts, available_at)[0]
+                if poll.ok():
+                    poll_id = models.Polls.add_poll(poll.title,
+                                                    poll.description,
+                                                    poll.image,
+                                                    poll.begin_ts,
+                                                    poll.end_ts,
+                                                    poll.available_at)[0]
 
-                return jsonify({ 'poll_id': poll_id })
-        elif request.method == 'GET':
-            return jsonify(models.Polls.get_polls(token))
+                    return jsonify({'poll_id': poll_id})
+
+                return jsonify(poll.error()), 400
+
+            return abort(415)
+
+        return jsonify(models.Polls.get_polls(token))
 
     return abort(400)
-
