@@ -8,6 +8,36 @@ def cursor_to_json(query):
     return [dict(zip(tuple(query.keys()), data)) for data in query.cursor]
 
 
+class Poll:
+    def __init__(self, data):
+        self.title = data.get('title')
+        self.description = data.get('description')
+        self.image = data.get('image')
+        self.begin_ts = data.get('begin_ts')
+        self.end_ts = data.get('end_ts')
+        self.available_at = data.get('available_at')
+        self.functions = [validators.title, validators.description, validators.image, validators.ts,  validators.ts, validators.ts]
+        self.fields = [self.title, self.description, self.image, self.begin_ts, self.end_ts, self.available_at]
+        self.names = ['title', 'description', 'image', 'begin_ts', 'end_ts', 'available_at']
+
+    def ok(self):
+        return all([bool(field) for field in self.fields]) and all([v(f) for v, f in zip(self.functions, self.fields)])
+
+    def error(self):
+        missing, malformed = [], []
+        for name, field, func in zip(self.names, self.fields, self.functions):
+            print(field)
+            if field is None:
+                missing.append(name)
+            elif not func(field):
+                malformed.append(name)
+        if missing:
+            return {"missing": missing}
+        if malformed:
+            return {"malformed": malformed}
+        return {}
+
+
 class Voter:
     def __init__(self, data):
         self.voter_id = data.get('voter_id')
@@ -17,17 +47,15 @@ class Voter:
         self.email = data.get('email')
         self.city = data.get('city')
         self.functions = [validators.voter_id, validators.password, validators.name, validators.email, validators.city]
+        self.fields = [self.voter_id, self.password, self.name, self.email, self.city]
+        self.names = ['voter_id', 'password', 'name', 'email', 'city']
 
     def ok(self):
-        fields = [self.voter_id, self.password, self.name, self.email, self.city]
-        return all([bool(field) for field in fields]) and all([v(f) for v, f in zip(self.functions, fields)])
+        return all([bool(field) for field in self.fields]) and all([v(f) for v, f in zip(self.functions, self.fields)])
 
     def error(self):
-        names = ['voter_id', 'password', 'name', 'email', 'city']
-        fields = [self.voter_id, self.password, self.name, self.email, self.city]
-
         missing, malformed = [], []
-        for name, field, func in zip(names, fields, self.functions):
+        for name, field, func in zip(self.names, self.fields, self.functions):
             if not field:
                 missing.append(name)
             elif not func(field):
@@ -95,14 +123,13 @@ class Tokens:
         conn = db.connect()
         return conn.execute("UPDATE tokens SET expiration_ts = 0 WHERE voter_id = ? AND expiration_ts <> 0", [voter_id])
 
+
 class Polls:
     @staticmethod
-    def add_poll(title, body, image, begin_ts, end_ts, available_at):
+    def add_poll(title, description, image, begin_ts, end_ts, available_at):
         conn = db.connect()
         with db.begin() as conn:
-            print()
-            conn.execute("INSERT INTO polls(title, body, image, begin_ts, end_ts, available_at) " +
-                            "VALUES (?, ?, ?, ?, ?, ?)", [title, body, image, begin_ts, end_ts, available_at])
+            conn.execute("INSERT INTO polls(title, description, image, begin_ts, end_ts, available_at) VALUES (?, ?, ?, ?, ?, ?)", [title, description, image, begin_ts, end_ts, available_at])
             return_id = conn.execute("SELECT last_insert_rowid() FROM polls").cursor.fetchone()
 
         return return_id
