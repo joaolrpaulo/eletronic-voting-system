@@ -27,15 +27,9 @@ export default class Card extends React.Component {
 
                 <div class="card-block">
                     <h4 class="card-title">
-                        <p class="poll-name" data-toggle="collapse" data-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample">Eleições Democráticas</p>
+                        <p class="poll-name" data-toggle="collapse" data-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample">{title}</p>
                     </h4>
-                    <div class="collapse" id="collapseExample">
-                        <div class="card card-block scrollable">
-                            Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. Nihil anim keffiyeh helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proidentsdcsdcdsjkncdjkns dcnjksdnkjdsilcds. kjnk. Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. Nihil anim keffiyeh helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proidentsdcsdcdsjkncdjkns dcnjksdnkjdsilcds.
-                        </div>
-                    </div>
-                    <br/>
-                    <button type="button" class="btn btn-primary waves-effect waves-light" data-toggle="modal" data-target="#fullHeightModalRight">Large Modal</button>
+                    <button type="button" class="btn btn-primary waves-effect waves-light" data-toggle="modal" data-target="#fullHeightModalRight">Vote</button>
                     <div class="modal fade right" id="fullHeightModalRight" role="dialog" tabindex="-1" aria-labelledby="myModalLabel" aria-hidden="true">
                         <div class="modal-dialog modal-full-height modal-right" role="document">
                             <div class="modal-content">
@@ -43,11 +37,10 @@ export default class Card extends React.Component {
                                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                         <span aria-hidden="true">×</span>
                                     </button>
-                                    <h4 class="modal-title w-100" id="myModalLabel">Modal title</h4>
+                                    <h4 class="modal-title w-100" id="myModalLabel">{title}</h4>
                                 </div>
                                 <div class="modal-body">
-                                    <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Sapiente magnam, sunt, ea dolore eum quod. Minima fugiat enim aut soluta est reprehenderit reiciendis quos, qui, amet possimus laborum assumenda voluptate.
-                                    </p>
+                                    <p>{description}</p>
 
                                     <ul class="list-group z-depth-0">
                                         <li class="list-group-item justify-content-between">
