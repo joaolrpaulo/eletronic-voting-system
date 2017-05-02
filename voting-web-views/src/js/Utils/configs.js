@@ -1,7 +1,7 @@
 // Global configs file
 import axios from 'axios';
 
-import User from './Models/User.js';
+import User from './../Models/User.js';
 
 export const axiosConfig = {
     baseUrl: 'https://nuno.sytes.net',

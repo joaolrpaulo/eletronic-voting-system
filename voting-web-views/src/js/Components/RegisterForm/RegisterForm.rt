@@ -1,0 +1,44 @@
+<div class="card submission-forms" data-wow-duration="2.5s">
+  <div class="card-block">
+    <div id="form-header">
+      <i onClick={this.toggleLoggingInState.bind(this)} id="left-arrow" class="fa fa-2x fa-arrow-circle-left refix waves-effect"></i>
+      <h3 id="register-header-text" class="text-center">Register</h3>
+    </div>
+    <hr/>
+
+    <div class="md-form">
+      <i class="fa fa-id-card prefix"></i>
+      <input type="text" id="voter_id" value="12345678" class="form-control"/>
+      <label for="voter_id">Voter ID</label>
+    </div>
+
+    <div class="md-form">
+      <i class="fa fa-user prefix"></i>
+      <input type="text" id="name" value="Um falso" class="form-control"/>
+      <label for="name">Your name</label>
+    </div>
+
+    <div class="md-form">
+      <i class="fa fa-building prefix"></i>
+      <input type="text" id="city" value="Manchester" class="form-control"/>
+      <label for="city">City</label>
+    </div>
+
+    <div class="md-form">
+      <i class="fa fa-envelope prefix"></i>
+      <input type="email" id="email" value="email@email.com" class="form-control"/>
+      <label for="email">Your email</label>
+    </div>
+
+    <div class="md-form">
+      <i class="fa fa-lock prefix"></i>
+      <input type="password" id="password" value="Password0!" class="form-control"/>
+      <label for="password">Your password</label>
+    </div>
+
+    <div class="text-center">
+      <button onClick={this.formSubmit.bind(this)} class="btn btn-danger btn-lg waves-effect">Sign up</button>
+    </div>
+
+  </div>
+</div>

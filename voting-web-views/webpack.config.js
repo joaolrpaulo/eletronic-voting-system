@@ -39,6 +39,7 @@ module.exports = {
                 exclude: /node_modules/,
                 loaders: ['style-loader', 'css-loader', 'sass-loader']
             },
+            { test: /\.rt$/, loader: 'react-templates-loader?modules=es6' },
             {
                 test: /\.js?$/,
                 exclude: /node_modules/,
