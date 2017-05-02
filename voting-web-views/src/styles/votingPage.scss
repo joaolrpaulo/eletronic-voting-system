@@ -4,6 +4,16 @@
     width: 100vw !important;
 }
 
+.poll-name {
+    cursor: pointer;
+}
+
+.scrollable {
+    float: left;
+    overflow-y: scroll;
+    max-height: 200px;
+}
+
 .voting-card {
     width: 300px;
     height: 400px;

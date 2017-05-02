@@ -32,6 +32,7 @@ export default class RegisterForm extends React.Component {
                         <h3>Login</h3>
                         <hr/>
                     </div>
+                        <span class="glyphicon glyphicon-star" aria-hidden="true">aaa</span>
                     <div class="md-form">
                         <i class="fa fa-user prefix"></i>
                         <input type="text" id="username" class="form-control"/>
@@ -45,7 +46,6 @@ export default class RegisterForm extends React.Component {
 
                     <div class="text-center">
                         <button onClick={this.formSubmit.bind(this)} class="btn btn-primary btn-rounded btn-lg waves-effect">Login</button>
-                        <br/>
                         <br/>
                         <fieldset class="form-group">
                             <button onClick={this.toggleForm.bind(this)} class="btn btn-danger btn-lg waves-effect">Sign Up</button>
