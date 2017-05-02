@@ -1,0 +1,26 @@
+<rt-import name="default" as="LoginForm" from="./../../LoginForm/LoginForm.js"/>
+<rt-import name="default" as="RegisterForm" from="./../../RegisterForm/RegisterForm.js"/>
+<div class="view-fullscreen hm-black-strong">
+  <div class="full-bg-img flex-center mask pattern-3">
+    <div class="container">
+      <div class="row full-width" id="home">
+        <div class="col-lg-6">
+          <div class="description">
+            <h2 class="h2-responsive wow fadeInLeft">Electronic Voting System</h2>
+            <hr class="hr-dark wow fadeInLeft"/>
+            <p class="wow fadeInLeft" data-wow-duration="2.5s">asdsdsadksadaskdasldkjasldkjaskdjasdjasdjasd asdasd as dsandasdsdsadksadaskdasldkjasldkjaskdjasdjasdjasd asdasd as dsandWrite something hereWrite something here</p>
+            <br/>
+            <a class="btn btn-outline-white btn-lg wow fadeInLeft waves-effect" data-wow-delay="0.7s">About</a>
+          </div>
+        </div>
+        <div rt-if="this.state.loggingIn" class="col-lg-6">
+          <LoginForm/>
+        </div>
+        <div rt-if="!this.state.loggingIn" class="col-lg-6">
+          <RegisterForm/>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>

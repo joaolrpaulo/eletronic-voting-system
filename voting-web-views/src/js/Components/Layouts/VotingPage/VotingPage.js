@@ -1,14 +1,16 @@
 import React from 'react';
 
-import Card from './Card.js';
-import VotingPageStore from './../Stores/votingPageStore.js';
-import * as VotingPageActions from './../Actions/votingPageActions.js';
+import Card from './../../Card/Card.js';
+import VotingPageStore from './../../../Stores/votingPageStore.js';
+import * as VotingPageActions from './../../../Actions/votingPageActions.js';
+import VotingPageTemplate from './VotingPage.rt';
 
 export default class VotingPage extends React.Component {
     constructor () {
         super();
         this.state = {
-            polls: []
+            polls: [],
+            pollsHtml: []
         };
     }
 
@@ -22,13 +24,8 @@ export default class VotingPage extends React.Component {
     }
 
     getAll () {
-        this.setState({
-            polls: VotingPageStore.getAll()
-        });
-    }
-
-    render () {
-        const polls = this.state.polls.map(poll => {
+        const polls = VotingPageStore.getAll();
+        const pollsHtml = polls.map(poll => {
             return <Card
                        key={poll.id}
                        title={poll.title}
@@ -37,12 +34,11 @@ export default class VotingPage extends React.Component {
                    />;
         });
 
-        return (
-            <div class="content nimvelo">
-                <div class="row container container-cards margin-top">
-                    {polls}
-                </div>
-            </div>
-        );
+        this.setState({
+            polls,
+            pollsHtml
+        });
     }
 }
+
+VotingPage.prototype.render = VotingPageTemplate;

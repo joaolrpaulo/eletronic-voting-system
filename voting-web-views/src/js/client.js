@@ -4,12 +4,12 @@ import { IndexRoute, Router, hashHistory, Route } from 'react-router';
 
 import './../styles/styles.scss';
 
-import Navbar from './Components/Navbar.js';
-import MainPage from './Components/MainPage.js';
-import VotingPage from './Components/VotingPage.js';
-import PrivateAreaComponent from './Components/PrivateAreaComponent';
+import Navbar from './Components/Navbar/Navbar.js';
+import MainPage from './Components/Layouts/MainPage/MainPage.js';
+import VotingPage from './Components/Layouts/VotingPage/VotingPage.js';
+import PrivateAreaComponent from './Components/AuthComponent/PrivateAreaComponent.js';
 
-import { init } from './configs.js';
+import { init } from './Utils/configs.js';
 init();
 
 export default class Layout extends React.Component {
