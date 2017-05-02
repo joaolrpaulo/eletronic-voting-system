@@ -6,12 +6,21 @@ export function toggleLoggedInState () {
     });
 }
 
-export function logInUser (username, password) {
+export function logInUser (voterId, password) {
     dispatcher.dispatch({
         type: 'LOG_IN_USER',
         payload: {
-            username,
+            voterId,
             password
+        }
+    });
+}
+
+export function registerUser (user) {
+    dispatcher.dispatch({
+        type: 'REGISTER_USER',
+        payload: {
+            user
         }
     });
 }

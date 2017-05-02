@@ -1,10 +1,9 @@
 import { EventEmitter } from 'events';
-import axios from 'axios';
 import { hashHistory } from 'react-router';
 
 import dispatcher from './../dispatcher.js';
-import { axiosConfig } from './../configs.js';
-import User from './../User.js';
+import { axiosMethods } from './../configs.js';
+import User from './../Models/User.js';
 
 class MainPageStore extends EventEmitter {
     constructor () {
@@ -21,17 +20,39 @@ class MainPageStore extends EventEmitter {
         this.emit('change');
     }
 
-    logInUser (data) {
-        axios.post(axiosConfig.baseUrl + '/login', {
-            voter_id: data.username,
-            password: data.password
-        }, axiosConfig.post)
-            .then((response) => {
-                User.setToken(response.data.token).toggleLoggedIn();
-                console.log(User.getToken());
+    logInUser ({voterId, password}) {
+        const body = {
+            voter_id: voterId,
+            password
+        };
+
+        axiosMethods.post('/login', body)
+            .then(response => {
+                const token = response.data.token;
+
+                User.setToken(token).toggleLoggedIn();
                 hashHistory.push('/voting');
+                sessionStorage.token = token;
             })
-            .catch((error) => {
+            .catch(error => {
+                console.log(error);
+            });
+    }
+
+    registerUser ({voter_id, password, email, name, city}) {
+        const body = {
+            voter_id,
+            password,
+            email,
+            name,
+            city
+        };
+
+        axiosMethods.post('/register', body)
+            .then(response => {
+                console.log(response);
+            })
+            .catch(error => {
                 console.log(error);
             });
     }
@@ -44,6 +65,10 @@ class MainPageStore extends EventEmitter {
         }
         case 'LOG_IN_USER': {
             this.logInUser(action.payload);
+            break;
+        }
+        case 'REGISTER_USER': {
+            this.registerUser(action.payload.user);
             break;
         }
         }

@@ -1,18 +1,26 @@
 import React from 'react';
+import { hashHistory } from 'react-router';
 
 import RegisterForm from './RegisterForm.js';
 import LoginForm from './LoginForm.js';
 import MainPageStore from './../Stores/mainPageStore.js';
+import User from './../Models/User.js';
 
 export default class MainPage extends React.Component {
     constructor () {
         super();
+
         this.state = {
             loggingIn: true
         };
     }
 
     componentWillMount () {
+        if (sessionStorage.getItem ('token')) {
+            User.setToken(sessionStorage.getItem('token')).toggleLoggedIn();
+            hashHistory.push('/voting');
+        }
+
         MainPageStore.on('change', this.getLoggingInState.bind(this));
     }
 

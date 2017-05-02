@@ -1,12 +1,10 @@
 import React from 'react';
-import axios from 'axios';
 
-import { axiosConfig } from './../configs.js';
-import User from './../User.js';
+import { axiosMethods } from './../configs.js';
 
 export default class Card extends React.Component {
     request () {
-        axios.get(axiosConfig.baseUrl + '/user', axiosConfig.get(User.getToken()))
+        axiosMethods.get('/user')
              .then((response) => {
                  console.log(response);
              })
@@ -16,10 +14,12 @@ export default class Card extends React.Component {
     }
 
     render () {
+        const { description, title, imgSrc } = this.props;
+
         return (
             <div class="card voting-card">
                 <div class="view overlay hm-white-slight">
-                    <img src="https://mdbootstrap.com/img/Photos/Horizontal/Nature/4-col/img%20%287%29.jpg" class="img-fluid round-image" alt=""/>
+                    <img src={imgSrc} class="img-fluid round-image" alt=""/>
                     <a href="#">
                         <div class="mask waves-effect waves-light"></div>
                     </a>

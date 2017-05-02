@@ -1,15 +1,12 @@
 import React from 'react';
-import { browserHistory } from 'react-router';
+import { hashHistory } from 'react-router';
 
-import User from './../User.js';
+import User from './../Models/User.js';
 
 export default class PrivateAreaComponent extends React.Component {
     componentDidMount () {
-        const { currentUrl } = this.props;
-        console.log('user is not logged in', User.isLoggedIn);
-
         if (!User.isLoggedIn) {
-            browserHistory.replace('/');
+            hashHistory.push('/');
         }
     }
 

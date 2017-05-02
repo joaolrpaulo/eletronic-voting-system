@@ -32,5 +32,6 @@ ReactDOM.render(
                 <Route path='voting' component={VotingPage}/>
             </Route>
         </Route>
+        <Route path="*" component={MainPage}/>
     </Router>,
     app);

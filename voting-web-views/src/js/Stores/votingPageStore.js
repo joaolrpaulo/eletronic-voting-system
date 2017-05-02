@@ -1,9 +1,7 @@
 import { EventEmitter } from 'events';
-import axios from 'axios';
 
 import dispatcher from './../dispatcher.js';
-import { axiosConfig } from './../configs.js';
-import User from './../User.js';
+import { axiosMethods } from './../configs.js';
 
 class VotingPageStore extends EventEmitter {
     constructor () {
@@ -12,7 +10,7 @@ class VotingPageStore extends EventEmitter {
     }
 
     retrievePolls () {
-        axios.get(axiosConfig.baseUrl + '/polls', axiosConfig.get(User.getToken()))
+        axiosMethods.get('/polls')
             .then((response) => {
                 this.polls = response.data;
                 this.emit('change');

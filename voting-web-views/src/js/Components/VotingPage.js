@@ -29,8 +29,12 @@ export default class VotingPage extends React.Component {
 
     render () {
         const polls = this.state.polls.map(poll => {
-            console.log(poll);
-            return <Card/>;
+            return <Card
+                       key={poll.id}
+                       title={poll.title}
+                       description={poll.description}
+                       imgSrc="https://mdbootstrap.com/img/Photos/Horizontal/Nature/4-col/img%20%287%29.jpg"
+                   />;
         });
 
         return (
