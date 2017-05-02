@@ -1,23 +1,37 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import { IndexRoute, Router, hashHistory, Route } from 'react-router';
 
 import './../styles/styles.scss';
 
 import Navbar from './Components/Navbar.js';
 import MainPage from './Components/MainPage.js';
 import VotingPage from './Components/VotingPage.js';
+import PrivateAreaComponent from './Components/PrivateAreaComponent';
 
-new WOW().init();
+import { init } from './configs.js';
+init();
 
 export default class Layout extends React.Component {
     render () {
         return (
             <div>
                 <Navbar/>
-                <VotingPage/>
+                {this.props.children}
             </div>
         );
     }
 }
 
-ReactDOM.render(<Layout/>, document.getElementById('app'));
+const app = document.getElementById('app');
+ReactDOM.render(
+    <Router history={hashHistory}>
+        <Route path='/' component={Layout}>
+            <IndexRoute component={MainPage}/>
+            <Route component={PrivateAreaComponent}>
+                <Route path='voting' component={VotingPage}/>
+            </Route>
+        </Route>
+        <Route path="*" component={MainPage}/>
+    </Router>,
+    app);

@@ -7,3 +7,4 @@ articles
 certs
 node_modules
 init.sql
+.#*

@@ -1,16 +1,14 @@
 import { EventEmitter } from 'events';
-import axios from 'axios';
-import https from 'https';
+import { hashHistory } from 'react-router';
 
 import dispatcher from './../dispatcher.js';
+import { axiosMethods } from './../configs.js';
+import User from './../Models/User.js';
 
 class MainPageStore extends EventEmitter {
     constructor () {
         super();
         this.loggingIn = true;
-        this.instance = {
-            headers: {'Content-Type': 'application/json'}
-        };
     }
 
     getLoggingInState () {
@@ -19,19 +17,42 @@ class MainPageStore extends EventEmitter {
 
     setLoggingInState () {
         this.loggingIn = !this.loggingIn;
-        console.log('changed');
         this.emit('change');
     }
 
-    logInUser (data) {
-        axios.post('https://192.168.0.184/login', {
-            voter_id: data.username,
-            password: data.password
-        }, this.instance)
-            .then((response) => {
+    logInUser ({voterId, password}) {
+        const body = {
+            voter_id: voterId,
+            password
+        };
+
+        axiosMethods.post('/login', body)
+            .then(response => {
+                const token = response.data.token;
+
+                User.setToken(token).toggleLoggedIn();
+                hashHistory.push('/voting');
+                sessionStorage.token = token;
+            })
+            .catch(error => {
+                console.log(error);
+            });
+    }
+
+    registerUser ({voter_id, password, email, name, city}) {
+        const body = {
+            voter_id,
+            password,
+            email,
+            name,
+            city
+        };
+
+        axiosMethods.post('/register', body)
+            .then(response => {
                 console.log(response);
             })
-            .catch((error) => {
+            .catch(error => {
                 console.log(error);
             });
     }
@@ -44,6 +65,10 @@ class MainPageStore extends EventEmitter {
         }
         case 'LOG_IN_USER': {
             this.logInUser(action.payload);
+            break;
+        }
+        case 'REGISTER_USER': {
+            this.registerUser(action.payload.user);
             break;
         }
         }

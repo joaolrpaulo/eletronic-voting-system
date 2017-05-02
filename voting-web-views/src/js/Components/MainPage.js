@@ -1,18 +1,26 @@
 import React from 'react';
+import { hashHistory } from 'react-router';
 
 import RegisterForm from './RegisterForm.js';
 import LoginForm from './LoginForm.js';
 import MainPageStore from './../Stores/mainPageStore.js';
+import User from './../Models/User.js';
 
 export default class MainPage extends React.Component {
     constructor () {
         super();
+
         this.state = {
             loggingIn: true
         };
     }
 
     componentWillMount () {
+        if (sessionStorage.getItem ('token')) {
+            User.setToken(sessionStorage.getItem('token')).toggleLoggedIn();
+            hashHistory.push('/voting');
+        }
+
         MainPageStore.on('change', this.getLoggingInState.bind(this));
     }
 
@@ -36,7 +44,7 @@ export default class MainPage extends React.Component {
                                 <div class="description">
                                     <h2 class="h2-responsive wow fadeInLeft">Electronic Voting System</h2>
                                     <hr class="hr-dark wow fadeInLeft"/>
-                                    <p class="wow fadeInLeft" data-wow-duration="2.5s">Test.</p>
+                                    <p class="wow fadeInLeft" data-wow-duration="2.5s">asdsdsadksadaskdasldkjasldkjaskdjasdjasdjasd asdasd as dsandasdsdsadksadaskdasldkjasldkjaskdjasdjasdjasd asdasd as dsandWrite something hereWrite something here</p>
                                     <br/>
                                     <a class="btn btn-outline-white btn-lg wow fadeInLeft waves-effect" data-wow-delay="0.7s">About</a>
                                 </div>

@@ -18,10 +18,10 @@ export default class RegisterForm extends React.Component {
     }
 
     formSubmit (ev) {
-        const username = document.getElementById('username').value;
+        const voterId = document.getElementById('voterId').value;
         const password = document.getElementById('password').value;
 
-        MainPageActions.logInUser(username, password);
+        MainPageActions.logInUser(voterId, password);
     }
 
     render () {
@@ -35,13 +35,13 @@ export default class RegisterForm extends React.Component {
                         <span class="glyphicon glyphicon-star" aria-hidden="true">aaa</span>
                     <div class="md-form">
                         <i class="fa fa-user prefix"></i>
-                        <input type="text" id="username" class="form-control"/>
-                        <label for="form3">Your username</label>
+                        <input type="text" id="voterId" class="form-control"/>
+                        <label for="voterId">Your Voter Id</label>
                     </div>
                     <div class="md-form">
                         <i class="fa fa-lock prefix"></i>
                         <input type="password" id="password" class="form-control"/>
-                        <label for="form4">Your password</label>
+                        <label for="password">Your password</label>
                     </div>
 
                     <div class="text-center">

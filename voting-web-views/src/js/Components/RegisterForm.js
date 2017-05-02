@@ -4,9 +4,15 @@ import * as MainPageActions from './../Actions/mainPageActions.js';
 
 export default class RegisterForm extends React.Component {
     formSubmit () {
-        const username = document.getElementById('username').value;
-        const password = document.getElementById('password').value;
-        const email = document.getElementById('email').value;
+        const user = {
+            voter_id: document.getElementById('voter_id').value,
+            name: document.getElementById('name').value,
+            city: document.getElementById('city').value,
+            password: document.getElementById('password').value,
+            email: document.getElementById('email').value
+        };
+
+        MainPageActions.registerUser(user);
     }
 
     toggleLoggingInState () {
@@ -25,32 +31,32 @@ export default class RegisterForm extends React.Component {
 
                     <div class="md-form">
                         <i class="fa fa-id-card prefix"></i>
-                        <input type="text" id="username" class="form-control"/>
-                        <label for="form3">Voter ID</label>
+                        <input type="text" id="voter_id" value="12345678" class="form-control"/>
+                        <label for="voter_id">Voter ID</label>
                     </div>
 
                     <div class="md-form">
                         <i class="fa fa-user prefix"></i>
-                        <input type="text" id="username" class="form-control"/>
-                        <label for="form3">Your name</label>
+                        <input type="text" id="name" value="Um falso" class="form-control"/>
+                        <label for="name">Your name</label>
                     </div>
 
                     <div class="md-form">
                         <i class="fa fa-building prefix"></i>
-                        <input type="text" id="username" class="form-control"/>
-                        <label for="form3">City</label>
+                        <input type="text" id="city" value="Manchester" class="form-control"/>
+                        <label for="city">City</label>
                     </div>
 
                     <div class="md-form">
                         <i class="fa fa-envelope prefix"></i>
-                        <input type="email" id="email" class="form-control"/>
-                        <label for="form2">Your email</label>
+                        <input type="email" id="email" value="email@email.com" class="form-control"/>
+                        <label for="email">Your email</label>
                     </div>
 
                     <div class="md-form">
                         <i class="fa fa-lock prefix"></i>
-                        <input type="password" id="password" class="form-control"/>
-                        <label for="form4">Your password</label>
+                        <input type="password" id="password" value="Password0!" class="form-control"/>
+                        <label for="password">Your password</label>
                     </div>
 
                     <div class="text-center">
