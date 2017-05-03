@@ -1,0 +1,5 @@
+<div class="content nimvelo">
+  <div class="row container container-cards margin-top">
+    {this.state.pollsHtml}
+  </div>
+</div>

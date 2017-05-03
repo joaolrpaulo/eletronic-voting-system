@@ -39,6 +39,7 @@ module.exports = {
                 exclude: /node_modules/,
                 loaders: ['style-loader', 'css-loader', 'sass-loader']
             },
+            { test: /\.rt$/, loader: 'react-templates-loader?modules=es6' },
             {
                 test: /\.js?$/,
                 exclude: /node_modules/,
@@ -49,6 +50,16 @@ module.exports = {
                 }
             }
         ]
+    },
+    resolve: {
+        alias: {
+            Components: path.resolve(__dirname, 'src/js/Components'),
+            Actions: path.resolve(__dirname, 'src/js/Actions'),
+            Stores: path.resolve(__dirname, 'src/js/Stores'),
+            Utils: path.resolve(__dirname, 'src/js/Utils'),
+            Models: path.resolve(__dirname, 'src/js/Models'),
+            Styles: path.resolve(__dirname, 'src/styles')
+        }
     },
     output: {
         path: path.join(__dirname, 'build'),
