@@ -1,6 +1,6 @@
 import React from 'react';
 
-import * as MainPageActions from './../../Actions/mainPageActions.js';
+import * as MainPageActions from 'Actions/mainPageActions.js';
 import RegisterFormTemplate from './RegisterForm.rt';
 
 export default class RegisterForm extends React.Component {

@@ -1,8 +1,8 @@
 import React from 'react';
 
-import Card from './../../Card/Card.js';
-import VotingPageStore from './../../../Stores/votingPageStore.js';
-import * as VotingPageActions from './../../../Actions/votingPageActions.js';
+import Card from 'Components/Card/Card.js';
+import VotingPageStore from 'Stores/votingPageStore.js';
+import * as VotingPageActions from 'Actions/votingPageActions.js';
 import VotingPageTemplate from './VotingPage.rt';
 
 export default class VotingPage extends React.Component {
