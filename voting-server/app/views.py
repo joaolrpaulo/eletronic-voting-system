@@ -1,152 +1,112 @@
 import time
+import uuid
 
 import sqlalchemy
-from flask import abort
-from flask import jsonify
-from flask import request
+from flask import abort, jsonify, request
 from flask_cors import cross_origin
 
-from app import app, config
-from app import models
-from app.crypto import Encryption
+from app import app, config, models, validators
+from app.crypto import JWT
 
 
-@app.route("/register", methods=['POST'])
 @cross_origin()
+@app.route('/register', methods = ['POST'])
 def register():
     if request.headers.get('Content-Type') == 'application/json':
-        voter = models.Voter(request.json)
-        if voter.ok():
-            voter.hash_password()
+        if validators.has_valid_body(request.json, models.VotersDB.fields(), models.VotersDB.validators()):
+            voter = models.Voter(request.json)
             try:
-                models.Voters.add(voter)
+                voter_id = models.VotersDB.add(voter)
             except sqlalchemy.exc.IntegrityError:
-                return abort(409)
-            return jsonify({'message': 'success'})
-        return jsonify(voter.error()), 400
+                return jsonify({
+                    'message': 'voter_id already exists'
+                }), 409
+            return jsonify({
+                'message': 'voter was successfully registered',
+            }), 201, {'Location': '/voters/%d' % voter_id}
+        return jsonify({
+            'message': 'validation failed',
+            'errors': validators.get_body_errors(request.json, models.VotersDB.fields(), models.VotersDB.validators())
+        }), 422
     return abort(415)
 
 
-@app.route("/login", methods=['POST'])
 @cross_origin()
+@app.route("/login", methods = ['POST'])
 def login():
     if request.headers.get('Content-Type') == 'application/json':
         voter_id = request.json.get('voter_id')
-        voter_password = request.json.get('password')
+        password = request.json.get('password')
 
-        if voter_id and voter_password:
-            voter = models.Voters.get(voter_id)
-            if voter and voter.verify_password(voter_password):
-                # invalidate all previous tokens from the requested user
-                models.Tokens.invalidate_all(voter_id)
+        missing = []
+        if not voter_id:
+            missing.append('voter_id')
+        if not password:
+            missing.append('password')
 
-                time_now = int(time.time())
-                jwt = Encryption(config.jwt.secret)
-
-                token = jwt.encrypt({
+        if not missing:
+            voter = models.VotersDB.get(voter_id)
+            if voter and voter.verify_password(password):
+                models.TokensDB.invalidate_all(voter_id)
+                token = models.Token({
+                    'token': JWT(config.jwt.secret).encrypt({
+                        'voter_id': voter_id,
+                        'created_at': int(time.time()),
+                        'uuid': uuid.uuid4().hex
+                    }),
                     'voter_id': voter_id,
-                    'expiration_ts': time_now + config.tokens.ttl
+                    'expiration_ts': int(time.time()) + config.tokens.ttl
                 })
-
-                models.Tokens.add(voter_id, token,
-                                  time_now + config.tokens.ttl)
-
-                return jsonify({
-                    'token': token
-                })
-
-            if voter:
-                return abort(401)
-
-            return abort(404)
-
-        return abort(400)
-
-    return abort(415)
-
-
-@app.route("/logout", methods=['POST'])
-@cross_origin()
-def logout():
-    has_auth = request.headers.get('Authorization')
-    if has_auth and has_auth.startswith('Bearer '):
-        token = has_auth.split('Bearer ')[1]
-        token_db = models.Tokens.get(token)
-
-        if token_db:
-            if token_db['expiration_ts'] <= int(time.time()):
-                models.Tokens.invalidate(token)
-
-            if token_db['expiration_ts'] == 0:
-                return jsonify({'message': 'token already expired'})
-
-            models.Tokens.invalidate(token)
-            return jsonify({'message': 'success'})
-
-        return abort(404)
-
-    return abort(415)
-
-
-@app.route("/user", methods=['GET'])
-@cross_origin()
-def user():
-    has_auth = request.headers.get('Authorization')
-    if has_auth and has_auth.startswith('Bearer '):
-        token = has_auth.split('Bearer ')[1]
-        token_db = models.Tokens.get(token)
-
-        if token_db:
-            time_now = int(time.time())
-            if token_db.get('expiration_ts') <= time_now or\
-               token_db.get('expiration_ts') == 0:
-
-                return abort(401)
-
-            voter_id = token_db['voter_id']
-            user = models.Voters.get(voter_id)
-            models.Tokens.revalidate(token, time_now + config.tokens.ttl)
-
+                models.TokensDB.add(token)
+                return jsonify(
+                    token.to_dict()
+                ), 201
             return jsonify({
-                'voter_id': user.voter_id,
-                'name': user.name,
-                'email': user.email,
-                'city': user.city
-            })
-
-        return abort(404)
-
-    return abort(400)
+                'message': 'wrong credentials'
+            }), 401
+        return jsonify({
+            'message': 'validation failed',
+            'errors': {'missing': missing}
+        }), 422
+    return abort(415)
 
 
-@app.route("/polls", methods=['GET', 'POST'])
 @cross_origin()
-def polls():
-    has_auth = request.headers.get('Authorization')
-    if has_auth and has_auth.startswith('Bearer '):
-        token = has_auth.split('Bearer ')[1]
-        time_now = int(time.time())
-        models.Tokens.revalidate(token, time_now + config.tokens.ttl)
+@app.route("/voters/<int:voter_id>", methods = ['GET'])
+def voters(voter_id):
+    # TODO: Authentication Wrapper
+    # TODO: Revalidate Token
+    voter = models.VotersDB.get(voter_id)
+    if voter:
+        return jsonify(
+            voter.to_dict()
+        ), 200
+    abort(404)
 
-        if request.method == 'POST':
-            if request.headers.get('Content-Type') == 'application/json':
 
+@cross_origin()
+@app.route("/polls/<int:poll_id>", methods = ['GET', 'POST'])
+def polls(poll_id):
+    # TODO: Authentication Wrapper
+    # TODO: Revalidate Token
+    if request.method == 'GET':
+        poll = models.PollsDB.get(poll_id)
+        if poll:
+            return jsonify(
+                poll.to_dict()
+            ), 200
+        abort(404)
+    # TODO: Only Admins
+    if request.method == 'POST':
+        if request.headers.get('Content-Type') == 'application/json':
+            if validators.has_valid_body(request.json, models.PollsDB.fields(), models.PollsDB.validators()):
                 poll = models.Poll(request.json)
-
-                if poll.ok():
-                    poll_id = models.Polls.add_poll(poll.title,
-                                                    poll.description,
-                                                    poll.image,
-                                                    poll.begin_ts,
-                                                    poll.end_ts,
-                                                    poll.available_at)[0]
-
-                    return jsonify({'poll_id': poll_id})
-
-                return jsonify(poll.error()), 400
-
-            return abort(415)
-
-        return jsonify(models.Polls.get_polls(token))
-
-    return abort(400)
+                poll_id = models.PollsDB.add(poll)
+                return jsonify({
+                    'message': 'poll was successfully registered',
+                }), 201, {'Location': '/polls/%d' % poll_id}
+            return jsonify({
+                'message': 'validation failed',
+                'errors': validators.get_body_errors(request.json, models.PollsDB.fields(), models.PollsDB.validators())
+            }), 422
+        return abort(415)
