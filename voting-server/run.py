@@ -1,7 +1,6 @@
 #!/usr/bin/python3.5
 
-from app import app
-from app import config
+from app import app, config
 
 
 app.run(

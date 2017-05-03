@@ -1,6 +1,5 @@
 from flask import jsonify
-from werkzeug.exceptions import HTTPException
-from werkzeug.exceptions import default_exceptions
+from werkzeug.exceptions import HTTPException, default_exceptions
 
 from app import app
 
@@ -12,3 +11,4 @@ def json_error(error):
 
 for code in default_exceptions.keys():
     app.register_error_handler(code, json_error)
+app.register_error_handler(Exception, json_error)

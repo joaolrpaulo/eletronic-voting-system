@@ -1,7 +1,7 @@
 from jose import jwt
 
 
-class Encryption:
+class JWT:
     def __init__(self, secret):
         with open(secret, mode = 'r') as f:
             self.secret = f.read()

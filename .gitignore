@@ -1,10 +1,11 @@
 *.db
 *.json
+*.pyc
+.#*
 .DS_Store
 .idea
 __pycache__
 articles
 certs
-node_modules
 init.sql
-.#*
+node_modules
