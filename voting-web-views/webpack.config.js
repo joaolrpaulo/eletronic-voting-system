@@ -51,6 +51,16 @@ module.exports = {
             }
         ]
     },
+    resolve: {
+        alias: {
+            Components: path.resolve(__dirname, 'src/js/Components'),
+            Actions: path.resolve(__dirname, 'src/js/Actions'),
+            Stores: path.resolve(__dirname, 'src/js/Stores'),
+            Utils: path.resolve(__dirname, 'src/js/Utils'),
+            Models: path.resolve(__dirname, 'src/js/Models'),
+            Styles: path.resolve(__dirname, 'src/styles')
+        }
+    },
     output: {
         path: path.join(__dirname, 'build'),
         filename: 'client.min.js'

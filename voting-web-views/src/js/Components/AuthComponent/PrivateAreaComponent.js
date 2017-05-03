@@ -1,7 +1,7 @@
 import React from 'react';
 import { hashHistory } from 'react-router';
 
-import User from './../../Models/User.js';
+import User from 'Models/User.js';
 
 export default class PrivateAreaComponent extends React.Component {
     componentDidMount () {

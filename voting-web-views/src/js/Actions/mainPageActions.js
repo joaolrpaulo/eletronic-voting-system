@@ -1,4 +1,4 @@
-import dispatcher from './../Utils/dispatcher.js';
+import dispatcher from 'Utils/dispatcher.js';
 
 export function toggleLoggedInState () {
     dispatcher.dispatch({

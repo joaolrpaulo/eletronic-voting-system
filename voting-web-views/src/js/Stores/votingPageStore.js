@@ -1,7 +1,7 @@
 import { EventEmitter } from 'events';
 
-import dispatcher from './../Utils/dispatcher.js';
-import { axiosMethods } from './../Utils/configs.js';
+import dispatcher from 'Utils/dispatcher.js';
+import { axiosMethods } from 'Utils/configs.js';
 
 class VotingPageStore extends EventEmitter {
     constructor () {

@@ -1,9 +1,9 @@
 import { EventEmitter } from 'events';
 import { hashHistory } from 'react-router';
 
-import dispatcher from './../Utils/dispatcher.js';
-import { axiosMethods } from './../Utils/configs.js';
-import User from './../Models/User.js';
+import dispatcher from 'Utils/dispatcher.js';
+import { axiosMethods } from 'Utils/configs.js';
+import User from 'Models/User.js';
 
 class MainPageStore extends EventEmitter {
     constructor () {

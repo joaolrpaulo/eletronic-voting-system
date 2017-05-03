@@ -1,8 +1,8 @@
 import React from 'react';
 import { hashHistory } from 'react-router';
 
-import MainPageStore from './../../../Stores/mainPageStore.js';
-import User from './../../../Models/User.js';
+import MainPageStore from 'Stores/mainPageStore.js';
+import User from 'Models/User.js';
 import MainPageTemplate from './MainPage.rt';
 
 export default class MainPage extends React.Component {
