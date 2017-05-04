@@ -17,11 +17,11 @@ def result_to_json(result, first = False, last = False):
 class Voter:
     def __init__(self, data):
         self.voter_id = data.get('voter_id')
+        self.role = data.get('role')
         if data.get('password'):
             self.pw_hash = pbkdf2_sha512.encrypt(data.get('password'), rounds = 200000, salt_size = 16)
         else:
             self.pw_hash = data.get('pw_hash')
-        self.role = data.get('role')
         self.email = data.get('email')
         self.name = data.get('name')
         self.city = data.get('city')
@@ -43,7 +43,7 @@ class VotersDB:
     def add(voter):
         conn = db.connect()
         result = conn.execute(
-            "INSERT INTO voters(voter_id, role, pw_hash, email, name, city) VALUES(?, ?, ?, ?, ?)",
+            "INSERT INTO voters(voter_id, role, pw_hash, email, name, city) VALUES(?, ?, ?, ?, ?, ?)",
             [voter.voter_id, 'normal_user', voter.pw_hash, voter.email, voter.name, voter.city]
         )
         return result.lastrowid
@@ -274,14 +274,22 @@ class PollsVotersDB:
         return [Poll(poll) for poll in json] if json else None
 
     @staticmethod
-    def get_poll_voters(poll_id):
+    def get_voter_polls(voter_id, all = False):
         conn = db.connect()
-        result = conn.execute(
-            "SELECT ?, * FROM voters WHERE voter_id IN (SELECT voter_id FROM polls_voters WHERE poll_id = ?)",
-            [poll_id, poll_id]
-        )
+        if all:
+            result = conn.execute(
+                "SELECT * FROM polls WHERE poll_id IN (SELECT poll_id FROM polls_voters WHERE voter_id = ?)",
+                [voter_id]
+            )
+        else:
+            time_now = int(time.time()) - 1
+            result = conn.execute(
+                "SELECT * FROM polls WHERE poll_id IN (SELECT poll_id FROM polls_voters WHERE voter_id = ?) \
+                AND begin_ts <= ? AND end_ts >= ?",
+                [voter_id, time_now, time_now]
+            )
         json = result_to_json(result)
-        return [Voter(poll) for poll in json] if json else None
+        return [Poll(poll) for poll in json] if json else None
 
     @staticmethod
     def delete(poll_id, voter_id):
@@ -314,4 +322,3 @@ class Token:
             'voter_id': self.voter_id,
             'expiration_ts': self.expiration_ts
         }
-
