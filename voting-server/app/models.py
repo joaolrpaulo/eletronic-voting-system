@@ -17,6 +17,7 @@ def result_to_json(result, first = False, last = False):
 class Voter:
     def __init__(self, data):
         self.voter_id = data.get('voter_id')
+        self.admin = data.get('admin')
         if data.get('password'):
             self.pw_hash = pbkdf2_sha512.encrypt(data.get('password'), rounds = 200000, salt_size = 16)
         else:
@@ -42,8 +43,8 @@ class VotersDB:
     def add(voter):
         conn = db.connect()
         result = conn.execute(
-            "INSERT INTO voters(voter_id, pw_hash, email, name, city) VALUES(?, ?, ?, ?, ?)",
-            [voter.voter_id, voter.pw_hash, voter.email, voter.name, voter.city]
+            "INSERT INTO voters(voter_id, pw_hash, email, name, city, admin) VALUES(?, ?, ?, ?, ?, ?)",
+            [voter.voter_id, voter.pw_hash, voter.email, voter.name, voter.city, 0]
         )
         return result.lastrowid
 
@@ -69,10 +70,6 @@ class VotersDB:
     @staticmethod
     def delete(voter_id):
         with db.begin() as conn:
-            conn.execute(
-                "DELETE FROM tokens WHERE voter_id = ?",
-                [voter_id]
-            )
             conn.execute(
                 "DELETE FROM polls_voters WHERE voter_id = ?",
                 [voter_id]
@@ -273,14 +270,22 @@ class PollsVotersDB:
         return [Poll(poll) for poll in json] if json else None
 
     @staticmethod
-    def get_poll_voters(poll_id):
+    def get_voter_polls(voter_id, all = False):
         conn = db.connect()
-        result = conn.execute(
-            "SELECT ?, * FROM voters WHERE voter_id IN (SELECT voter_id FROM polls_voters WHERE poll_id = ?)",
-            [poll_id, poll_id]
-        )
+        if all:
+            result = conn.execute(
+                "SELECT * FROM polls WHERE poll_id IN (SELECT poll_id FROM polls_voters WHERE voter_id = ?)",
+                [voter_id]
+            )
+        else:
+            time_now = int(time.time())
+            result = conn.execute(
+                "SELECT * FROM polls WHERE poll_id IN (SELECT poll_id FROM polls_voters WHERE voter_id = ?) \
+                AND begin_ts <= ? AND end_ts > ?",
+                [voter_id, time_now, time_now]
+            )
         json = result_to_json(result)
-        return [Voter(poll) for poll in json] if json else None
+        return [Poll(poll) for poll in json] if json else None
 
     @staticmethod
     def delete(poll_id, voter_id):
@@ -301,72 +306,27 @@ class PollsVotersDB:
         return result.rowcount
 
 
-class Token:
-    def __init__(self, data):
-        self.token = data.get('token')
-        self.voter_id = data.get('voter_id')
-        self.expiration_ts = data.get('expiration_ts')
-
-    def to_dict(self):
-        return {
-            'token': self.token,
-            'voter_id': self.voter_id,
-            'expiration_ts': self.expiration_ts
-        }
-
-
-class TokensDB:
+class Blacklist:
     @staticmethod
-    def add(token):
+    def add(token, expiration_ts):
         conn = db.connect()
         result = conn.execute(
-            "INSERT INTO tokens(token, voter_id, expiration_ts) SELECT ?, ?, ? FROM voters WHERE voter_id = ?",
-            [token.token, token.voter_id, token.expiration_ts, token.voter_id]
+            "INSERT INTO blacklist(token, expiration_ts) VALUES(?, ?)",
+            [token, expiration_ts]
         )
         return result.lastrowid
 
     @staticmethod
     def get(token):
         conn = db.connect()
-        result = conn.execute(
-            "SELECT * FROM tokens WHERE token = ?",
-            [token]
-        )
-        json = result_to_json(result, first = True)
-        return Token(json) if json else None
+        result = conn.execute("SELECT * FROM blacklist WHERE token = ?", [token])
+        return result_to_json(result)
 
     @staticmethod
-    def delete(token):
+    def delete():
         conn = db.connect()
         result = conn.execute(
-            "DELETE FROM tokens WHERE token = ?",
-            [token]
-        )
-        return result.rowcount
-
-    @staticmethod
-    def revalidate(token, expiration_ts):
-        conn = db.connect()
-        result = conn.execute(
-            "UPDATE tokens SET expiration_ts = ? WHERE token = ?",
-            [expiration_ts, token]
-        )
-        return result.rowcount
-
-    @staticmethod
-    def invalidate(token):
-        conn = db.connect()
-        result = conn.execute(
-            "UPDATE tokens SET expiration_ts = ? WHERE token = ?",
-            [int(time.time()) - 1, token]
-        )
-        return result.rowcount
-
-    @staticmethod
-    def invalidate_all(voter_id):
-        conn = db.connect()
-        result = conn.execute(
-            "UPDATE tokens SET expiration_ts = ? WHERE voter_id = ?",
-            [int(time.time()) - 1, voter_id]
+            "DELETE FROM blacklist WHERE expiration_ts < ?",
+            [int(time.time())]
         )
         return result.rowcount
