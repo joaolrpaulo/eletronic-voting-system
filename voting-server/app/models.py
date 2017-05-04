@@ -17,7 +17,7 @@ def result_to_json(result, first = False, last = False):
 class Voter:
     def __init__(self, data):
         self.voter_id = data.get('voter_id')
-        self.role = data.get('role')
+        self.admin = data.get('admin')
         if data.get('password'):
             self.pw_hash = pbkdf2_sha512.encrypt(data.get('password'), rounds = 200000, salt_size = 16)
         else:
@@ -43,8 +43,8 @@ class VotersDB:
     def add(voter):
         conn = db.connect()
         result = conn.execute(
-            "INSERT INTO voters(voter_id, role, pw_hash, email, name, city) VALUES(?, ?, ?, ?, ?, ?)",
-            [voter.voter_id, 'normal_user', voter.pw_hash, voter.email, voter.name, voter.city]
+            "INSERT INTO voters(voter_id, pw_hash, email, name, city, admin) VALUES(?, ?, ?, ?, ?, ?)",
+            [voter.voter_id, voter.pw_hash, voter.email, voter.name, voter.city, 0]
         )
         return result.lastrowid
 
@@ -70,10 +70,6 @@ class VotersDB:
     @staticmethod
     def delete(voter_id):
         with db.begin() as conn:
-            conn.execute(
-                "DELETE FROM tokens WHERE voter_id = ?",
-                [voter_id]
-            )
             conn.execute(
                 "DELETE FROM polls_voters WHERE voter_id = ?",
                 [voter_id]
@@ -282,10 +278,10 @@ class PollsVotersDB:
                 [voter_id]
             )
         else:
-            time_now = int(time.time()) - 1
+            time_now = int(time.time())
             result = conn.execute(
                 "SELECT * FROM polls WHERE poll_id IN (SELECT poll_id FROM polls_voters WHERE voter_id = ?) \
-                AND begin_ts <= ? AND end_ts >= ?",
+                AND begin_ts <= ? AND end_ts > ?",
                 [voter_id, time_now, time_now]
             )
         json = result_to_json(result)
@@ -310,15 +306,27 @@ class PollsVotersDB:
         return result.rowcount
 
 
-class Token:
-    def __init__(self, data):
-        self.token = data.get('token')
-        self.voter_id = data.get('voter_id')
-        self.expiration_ts = data.get('expiration_ts')
+class Blacklist:
+    @staticmethod
+    def add(token, expiration_ts):
+        conn = db.connect()
+        result = conn.execute(
+            "INSERT INTO blacklist(token, expiration_ts) VALUES(?, ?)",
+            [token, expiration_ts]
+        )
+        return result.lastrowid
 
-    def to_dict(self):
-        return {
-            'token': self.token,
-            'voter_id': self.voter_id,
-            'expiration_ts': self.expiration_ts
-        }
+    @staticmethod
+    def get(token):
+        conn = db.connect()
+        result = conn.execute("SELECT * FROM blacklist WHERE token = ?", [token])
+        return result_to_json(result)
+
+    @staticmethod
+    def delete():
+        conn = db.connect()
+        result = conn.execute(
+            "DELETE FROM blacklist WHERE expiration_ts < ?",
+            [int(time.time())]
+        )
+        return result.rowcount
