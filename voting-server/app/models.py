@@ -21,6 +21,7 @@ class Voter:
             self.pw_hash = pbkdf2_sha512.encrypt(data.get('password'), rounds = 200000, salt_size = 16)
         else:
             self.pw_hash = data.get('pw_hash')
+        self.role = data.get('role')
         self.email = data.get('email')
         self.name = data.get('name')
         self.city = data.get('city')
@@ -42,8 +43,8 @@ class VotersDB:
     def add(voter):
         conn = db.connect()
         result = conn.execute(
-            "INSERT INTO voters(voter_id, pw_hash, email, name, city) VALUES(?, ?, ?, ?, ?)",
-            [voter.voter_id, voter.pw_hash, voter.email, voter.name, voter.city]
+            "INSERT INTO voters(voter_id, role, pw_hash, email, name, city) VALUES(?, ?, ?, ?, ?)",
+            [voter.voter_id, 'normal_user', voter.pw_hash, voter.email, voter.name, voter.city]
         )
         return result.lastrowid
 
@@ -314,59 +315,3 @@ class Token:
             'expiration_ts': self.expiration_ts
         }
 
-
-class TokensDB:
-    @staticmethod
-    def add(token):
-        conn = db.connect()
-        result = conn.execute(
-            "INSERT INTO tokens(token, voter_id, expiration_ts) SELECT ?, ?, ? FROM voters WHERE voter_id = ?",
-            [token.token, token.voter_id, token.expiration_ts, token.voter_id]
-        )
-        return result.lastrowid
-
-    @staticmethod
-    def get(token):
-        conn = db.connect()
-        result = conn.execute(
-            "SELECT * FROM tokens WHERE token = ?",
-            [token]
-        )
-        json = result_to_json(result, first = True)
-        return Token(json) if json else None
-
-    @staticmethod
-    def delete(token):
-        conn = db.connect()
-        result = conn.execute(
-            "DELETE FROM tokens WHERE token = ?",
-            [token]
-        )
-        return result.rowcount
-
-    @staticmethod
-    def revalidate(token, expiration_ts):
-        conn = db.connect()
-        result = conn.execute(
-            "UPDATE tokens SET expiration_ts = ? WHERE token = ?",
-            [expiration_ts, token]
-        )
-        return result.rowcount
-
-    @staticmethod
-    def invalidate(token):
-        conn = db.connect()
-        result = conn.execute(
-            "UPDATE tokens SET expiration_ts = ? WHERE token = ?",
-            [int(time.time()) - 1, token]
-        )
-        return result.rowcount
-
-    @staticmethod
-    def invalidate_all(voter_id):
-        conn = db.connect()
-        result = conn.execute(
-            "UPDATE tokens SET expiration_ts = ? WHERE voter_id = ?",
-            [int(time.time()) - 1, voter_id]
-        )
-        return result.rowcount

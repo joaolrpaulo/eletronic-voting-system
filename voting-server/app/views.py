@@ -7,10 +7,11 @@ from flask_cors import cross_origin
 
 from app import app, config, models, validators
 from app.crypto import JWT
+from app.wrappers import authorization, authentication
 
 
-@cross_origin()
 @app.route('/register', methods = ['POST'])
+@cross_origin()
 def register():
     if request.headers.get('Content-Type') == 'application/json':
         if validators.has_valid_body(request.json, models.VotersDB.fields(), models.VotersDB.validators()):
@@ -31,8 +32,8 @@ def register():
     return abort(415)
 
 
-@cross_origin()
 @app.route("/login", methods = ['POST'])
+@cross_origin()
 def login():
     if request.headers.get('Content-Type') == 'application/json':
         voter_id = request.json.get('voter_id')
@@ -47,20 +48,15 @@ def login():
         if not missing:
             voter = models.VotersDB.get(voter_id)
             if voter and voter.verify_password(password):
-                models.TokensDB.invalidate_all(voter_id)
-                token = models.Token({
+                return jsonify({
                     'token': JWT(config.jwt.secret).encrypt({
                         'voter_id': voter_id,
-                        'created_at': int(time.time()),
-                        'uuid': uuid.uuid4().hex
+                        'iat': int(time.time()),
+                        'exp': int(time.time()) + config.tokens.ttl
                     }),
-                    'voter_id': voter_id,
-                    'expiration_ts': int(time.time()) + config.tokens.ttl
-                })
-                models.TokensDB.add(token)
-                return jsonify(
-                    token.to_dict()
-                ), 201
+                    'expiration_ts': int(time.time())
+                }), 201
+
             return jsonify({
                 'message': 'wrong credentials'
             }), 401
@@ -71,11 +67,11 @@ def login():
     return abort(415)
 
 
+@app.route("/voters/<int:voter_id>", methods = ['GET'], endpoint = 'voters')
 @cross_origin()
-@app.route("/voters/<int:voter_id>", methods = ['GET'])
+@authorization
+@authentication
 def voters(voter_id):
-    # TODO: Authentication Wrapper
-    # TODO: Revalidate Token
     voter = models.VotersDB.get(voter_id)
     if voter:
         return jsonify(
@@ -84,11 +80,11 @@ def voters(voter_id):
     abort(404)
 
 
+@app.route("/polls/<int:poll_id>", methods = ['GET', 'POST'], endpoint = 'polls')
 @cross_origin()
-@app.route("/polls/<int:poll_id>", methods = ['GET', 'POST'])
+@authorization
+@authentication
 def polls(poll_id):
-    # TODO: Authentication Wrapper
-    # TODO: Revalidate Token
     if request.method == 'GET':
         poll = models.PollsDB.get(poll_id)
         if poll:
@@ -96,7 +92,7 @@ def polls(poll_id):
                 poll.to_dict()
             ), 200
         abort(404)
-    # TODO: Only Admins
+
     if request.method == 'POST':
         if request.headers.get('Content-Type') == 'application/json':
             if validators.has_valid_body(request.json, models.PollsDB.fields(), models.PollsDB.validators()):

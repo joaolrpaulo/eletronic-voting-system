@@ -10,4 +10,9 @@ class JWT:
         return jwt.encode(data, self.secret, algorithm = algorithm)
 
     def decrypt(self, token, algorithm = ['HS256']):
-        return jwt.decode(token, self.secret, algorithms = algorithm)
+        try:
+            return jwt.decode(token, self.secret, algorithms = algorithm)
+        except Exception as e:
+            return {
+                'message': str(e)
+            }
