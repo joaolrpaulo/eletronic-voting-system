@@ -4,8 +4,10 @@
       <h3>Login</h3>
       <hr/>
     </div>
-    <span class="glyphicon glyphicon-star" aria-hidden="true">aaa</span>
-    <div class="md-form">
+    <p id="wrong-credentials" class="text-center invisible">
+      Wrong user info
+    </p>
+    <div class='md-form'>
       <i class="fa fa-user prefix"></i>
       <input type="text" id="voterId" class="form-control"/>
       <label for="voterId">Your Voter Id</label>
@@ -23,6 +25,5 @@
         <button onClick={this.toggleForm.bind(this)} class="btn btn-danger btn-lg waves-effect">Sign Up</button>
       </fieldset>
     </div>
-
   </div>
 </div>
