@@ -34,8 +34,9 @@ class MainPageStore extends EventEmitter {
                 hashHistory.push('/voting');
                 sessionStorage.token = token;
             })
-            .catch(error => {
-                console.log(error);
+            .catch(() => {
+                const paragraphWrongCredentials = document.getElementById('wrong-credentials');
+                paragraphWrongCredentials.className = paragraphWrongCredentials.className.replace('invisible', 'wrong-credentials');
             });
     }
 

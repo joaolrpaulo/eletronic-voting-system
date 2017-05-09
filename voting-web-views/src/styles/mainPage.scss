@@ -11,3 +11,13 @@
 .description {
     overflow-wrap: break-word;
 }
+
+.wrong-credentials {
+    color: red;
+    font-weight: bold;
+    display: visible;
+}
+
+.invisible {
+    display: none;
+}
