@@ -40,11 +40,3 @@ html, body, header, .view-fullscreen {
 @import "votingPage";
 @import "navbar";
 @import "mainPage";
-
-.progress {
-    background-color: transparent;
-    height: 100px;
-}
-.progress > svg {
-    display: block;
-}
