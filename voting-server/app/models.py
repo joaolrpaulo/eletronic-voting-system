@@ -260,19 +260,19 @@ class PollsVotersDB:
         return result.lastrowid
 
     @staticmethod
-    def get_voter_polls(voter_id):
+    def get_voter_poll(voter_id, poll_id):
         conn = db.connect()
         result = conn.execute(
-            "SELECT * FROM polls WHERE poll_id IN (SELECT poll_id FROM polls_voters WHERE voter_id = ?)",
-            [voter_id]
+            "SELECT * FROM polls WHERE poll_id IN (SELECT poll_id FROM polls_voters WHERE voter_id = ? AND poll_id = ?)",
+            [voter_id, poll_id]
         )
-        json = result_to_json(result)
-        return [Poll(poll) for poll in json] if json else None
+        json = result_to_json(result, first = True)
+        return Poll(json) if json else None
 
     @staticmethod
-    def get_voter_polls(voter_id, all = False):
+    def get_voter_polls(voter_id, all_polls = False):
         conn = db.connect()
-        if all:
+        if all_polls:
             result = conn.execute(
                 "SELECT * FROM polls WHERE poll_id IN (SELECT poll_id FROM polls_voters WHERE voter_id = ?)",
                 [voter_id]
@@ -306,27 +306,21 @@ class PollsVotersDB:
         return result.rowcount
 
 
-class Blacklist:
+class SessionsDB:
     @staticmethod
-    def add(token, expiration_ts):
+    def add(voter_id, _csrf_token):
         conn = db.connect()
         result = conn.execute(
-            "INSERT INTO blacklist(token, expiration_ts) VALUES(?, ?)",
-            [token, expiration_ts]
-        )
-        return result.lastrowid
-
-    @staticmethod
-    def get(token):
-        conn = db.connect()
-        result = conn.execute("SELECT * FROM blacklist WHERE token = ?", [token])
-        return result_to_json(result)
-
-    @staticmethod
-    def delete():
-        conn = db.connect()
-        result = conn.execute(
-            "DELETE FROM blacklist WHERE expiration_ts < ?",
-            [int(time.time())]
+            "INSERT OR REPLACE INTO sessions(voter_id, csrf_token) VALUES(?, ?)",
+            [voter_id, _csrf_token]
         )
         return result.rowcount
+
+    @staticmethod
+    def exists(voter_id, _csrf_token):
+        conn = db.connect()
+        result = conn.execute(
+            "SELECT * FROM sessions WHERE voter_id = ? AND csrf_token = ?",
+            [voter_id, _csrf_token]
+        )
+        return True if result_to_json(result, first = True) else False

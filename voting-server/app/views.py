@@ -1,11 +1,10 @@
-import time
-
 import sqlalchemy
-from flask import abort, jsonify, request
+from secrets import token_urlsafe
+
+from flask import abort, jsonify, request, session
 from flask_cors import cross_origin
 
-from app import app, config, models, validators
-from app.crypto import JWT
+from app import app, models, validators
 from app.wrappers import login_required, restricted
 
 
@@ -25,14 +24,22 @@ def login():
         if not missing:
             voter = models.VotersDB.get(voter_id)
             if voter and voter.verify_password(password):
+                session.permanent = True
+                _csrf_token = token_urlsafe(64)
+                print(session.get('_csrf_token'))
+
+                if session.get('voter_id') and models.SessionsDB.exists(voter_id, session.get('_csrf_token')):
+                    return jsonify({
+                        'message': 'voter already logged in!'
+                    }), 200
+
+                session['voter_id'] = voter.voter_id
+                session['_csrf_token'] = _csrf_token
+                models.SessionsDB.add(voter_id, _csrf_token)
+
                 return jsonify({
-                    'token': JWT(config.jwt.secret).encrypt({
-                        'voter_id': voter_id,
-                        'iat': int(time.time()),
-                        'exp': int(time.time()) + config.tokens.ttl
-                    }),
-                    'expiration_ts': int(time.time())
-                }), 201
+                    'message': 'voter successfully logged in!'
+                }), 200
             return jsonify({
                 'message': 'wrong credentials'
             }), 401
@@ -45,10 +52,21 @@ def login():
     return abort(415)
 
 
+@app.route("/logout", methods = ['POST'], endpoint = 'logout')
+@cross_origin()
+@login_required
+def logout():
+    if session.get('voter_id'):
+        session.clear()
+        return jsonify({
+            'message': 'voter successfully logged out!'
+        })
+    return abort(401)
+
+
 @app.route('/voters', methods = ['POST'], endpoint = 'create_voter')
 @cross_origin()
 @restricted
-@login_required
 def create_voter():
     if request.headers.get('Content-Type') == 'application/json':
         if validators.has_valid_body(request.json, models.VotersDB.fields(), models.VotersDB.validators()):
@@ -72,32 +90,38 @@ def create_voter():
 @app.route("/voters/<int:voter_id>", methods = ['GET'], endpoint = 'get_single_voter')
 @cross_origin()
 @restricted
-@login_required
 def get_single_voter(voter_id):
     voter = models.VotersDB.get(voter_id)
     if voter:
-        return voter.to_dict(), 200
-    return {
+        return jsonify(
+            voter.to_dict()
+        ), 200
+    return jsonify({
         'message': 'voter_id not found'
-    }, 404
+    }), 404
 
 
-@app.route("/voters", methods = ['GET'], endpoint = 'get_voter')
+@app.route("/voters", methods = ['GET'], endpoint = 'get_all_voters')
+@cross_origin()
+@restricted
+def get_all_voters():
+    return jsonify(
+        [voter.to_dict() for voter in models.VotersDB.get_all()]
+    ), 200
+
+
+@app.route("/voter", methods = ['GET'], endpoint = 'get_voter')
 @cross_origin()
 @login_required
 def get_voter():
-    token = request.headers.get('Authorization')
-    if token and token.startswith('Bearer '):
-        token = token.replace('Bearer ', '')
-        voter_id = JWT(config.jwt.secret).decrypt(token).get('voter_id')
-
-        return models.VotersDB.get(voter_id).to_dict(), 200
+    return jsonify(
+        models.VotersDB.get(session.get('voter_id')).to_dict()
+    ), 200
 
 
 @app.route("/polls", methods = ['POST'], endpoint = 'create_poll')
 @cross_origin()
 @restricted
-@login_required
 def create_poll():
     if request.headers.get('Content-Type') == 'application/json':
         if validators.has_valid_body(request.json, models.PollsDB.fields(), models.PollsDB.validators()):
@@ -119,9 +143,11 @@ def create_poll():
 @cross_origin()
 @login_required
 def get_poll(poll_id):
-    poll = models.PollsDB.get(poll_id)
+    poll = models.PollsVotersDB.get_voter_poll(session.get('voter_id'), poll_id)
     if poll:
-        return poll.to_dict(), 200
+        return jsonify(
+            poll.to_dict()
+        ), 200
     return {
         'message': 'poll_id not found'
     }, 404

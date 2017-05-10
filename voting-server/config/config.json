@@ -16,11 +16,8 @@
         "location": "database/voting-server.db"
     },
 
-    "jwt": {
-        "secret": "certs/jwt-secret.key"
-    },
-
-    "tokens": {
+    "session": {
+        "secret": "certs/jwt-secret.key",
         "ttl": 300
     }
 }

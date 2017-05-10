@@ -2,7 +2,6 @@
 
 from app import app, config
 
-
 app.run(
     host = config.endpoint.host,
     port = config.endpoint.port,
