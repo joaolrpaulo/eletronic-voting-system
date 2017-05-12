@@ -3,7 +3,6 @@ import sys
 
 from flask import Flask
 from flask_cors import CORS
-from flask_wtf import CSRFProtect
 from sqlalchemy import create_engine
 
 from app import configs
@@ -23,7 +22,6 @@ with open(config.sessions.secret, mode = 'r') as secret_key:
     app.config['SECRET_KEY'] = secret_key.read()
 
 cors = CORS(app)
-csrf = CSRFProtect(app)
 
 
 # Connect to database
