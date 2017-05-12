@@ -16,8 +16,8 @@
         "location": "database/voting-server.db"
     },
 
-    "session": {
-        "secret": "certs/jwt-secret.key",
+    "sessions": {
+        "secret": "certs/flask-secret.key",
         "ttl": 300
     }
 }

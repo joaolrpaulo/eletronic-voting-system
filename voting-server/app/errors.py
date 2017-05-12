@@ -1,5 +1,5 @@
 from flask import jsonify
-from werkzeug.exceptions import HTTPException, default_exceptions
+from werkzeug.exceptions import default_exceptions, HTTPException
 
 from app import app
 
