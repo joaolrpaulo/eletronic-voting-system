@@ -263,7 +263,8 @@ class PollsVotersDB:
     def get_voter_poll(voter_id, poll_id):
         conn = db.connect()
         result = conn.execute(
-            "SELECT * FROM polls WHERE poll_id IN (SELECT poll_id FROM polls_voters WHERE voter_id = ? AND poll_id = ?)",
+            "SELECT * FROM polls WHERE poll_id IN \
+            (SELECT poll_id FROM polls_voters WHERE voter_id = ? AND poll_id = ?)",
             [voter_id, poll_id]
         )
         json = result_to_json(result, first = True)
@@ -308,19 +309,20 @@ class PollsVotersDB:
 
 class SessionsDB:
     @staticmethod
-    def add(voter_id, _csrf_token):
+    def add(voter_id, csrf_token):
         conn = db.connect()
         result = conn.execute(
             "INSERT OR REPLACE INTO sessions(voter_id, csrf_token) VALUES(?, ?)",
-            [voter_id, _csrf_token]
+            [voter_id, csrf_token]
         )
         return result.rowcount
 
     @staticmethod
-    def exists(voter_id, _csrf_token):
+    def get(voter_id, csrf_token):
         conn = db.connect()
         result = conn.execute(
             "SELECT * FROM sessions WHERE voter_id = ? AND csrf_token = ?",
-            [voter_id, _csrf_token]
+            [voter_id, csrf_token]
         )
-        return True if result_to_json(result, first = True) else False
+        json = result_to_json(result, first = True)
+        return json
