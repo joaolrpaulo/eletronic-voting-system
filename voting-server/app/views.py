@@ -36,7 +36,7 @@ def login():
 @app.route('/logout', methods = ['POST'], endpoint = 'logout')
 @authenticate
 def logout(token_voter_id):
-    models.TokensDB.remove(voter_id)
+    models.TokensDB.remove(token_voter_id)
     return jsonify({
         'message': 'voter successfully logged out'
     }), 200
@@ -44,7 +44,7 @@ def logout(token_voter_id):
 
 @app.route('/voters', methods = ['POST'], endpoint = 'create_voter')
 @restricted
-def create_voter():
+def create_voter(token_voter_id):
     if request.headers.get('Content-Type') == 'application/json':
         if validators.has_valid_body(request.json, models.VotersDB.fields(), models.VotersDB.validators()):
             voter = models.Voter(request.json)
@@ -66,7 +66,7 @@ def create_voter():
 
 @app.route('/voters/<int:voter_id>', methods = ['GET'], endpoint = 'get_voter')
 @restricted
-def get_voter(voter_id):
+def get_voter(token_voter_id, voter_id):
     voter = models.VotersDB.get(voter_id)
     if voter:
         return jsonify(
@@ -79,7 +79,7 @@ def get_voter(voter_id):
 
 @app.route('/voters', methods = ['GET'], endpoint = 'get_all_voters')
 @restricted
-def get_all_voters():
+def get_all_voters(token_voter_id):
     return jsonify(
         [voter.to_dict() for voter in models.VotersDB.get_all()]
     ), 200
@@ -95,7 +95,7 @@ def get_authenticated_voter(token_voter_id):
 
 @app.route('/polls', methods = ['POST'], endpoint = 'create_poll')
 @restricted
-def create_poll():
+def create_poll(token_voter_id):
     if request.headers.get('Content-Type') == 'application/json':
         if validators.has_valid_body(request.json, models.PollsDB.fields(), models.PollsDB.validators()):
             poll = models.Poll(request.json)
@@ -127,5 +127,25 @@ def get_poll(token_voter_id, poll_id):
 @authenticate
 def get_all_polls(token_voter_id):
     return jsonify(
-        [poll.to_dict() for poll in models.PollsVotersDB.get_voter_polls(token_voter_id, all_polls=True)]
+        [poll.to_dict() for poll in models.PollsVotersDB.get_voter_polls(token_voter_id, all_polls = True)]
     ), 200
+
+
+@app.route('/vote/<int:item_id>', methods = ['POST'], endpoint = 'make_vote')
+@authenticate
+def make_vote(token_voter_id, item_id):
+    item_poll = models.PollsItemsDB.get_poll(item_id)
+    if item_poll:
+        poll = models.PollsVotersDB.get_voter_poll(token_voter_id, item_poll.poll_id)
+        if poll:
+            if models.PollsVotersDB.can_vote(poll.poll_id, token_voter_id):
+                models.PollsDB.vote(poll.poll_id, token_voter_id, item_id)
+                return jsonify({
+                    'message': 'vote successfully registered'
+                }), 201
+            return jsonify({
+                'message': 'you can\'t vote twice in the same poll'
+            }), 403
+    return jsonify({
+        'message': 'item_id not found'
+    }), 404
