@@ -1,5 +1,5 @@
 import sqlalchemy
-from flask import abort, jsonify, request, session
+from flask import abort, jsonify, request
 
 from app import app, models, secrets, validators
 from app.wrappers import authenticate, restricted
@@ -14,18 +14,14 @@ def login():
         if validators.has_valid_body(request.json, models.VotersDB.fields()[:2], models.VotersDB.validators()[:2]):
             voter = models.VotersDB.get(voter_id)
             if voter and voter.verify_password(password):
-                session.permanent = True
-                if session.get('voter_id') and models.SessionsDB.get(voter_id, session.get('token')):
-                    return jsonify({
-                        'message': 'voter is already logged in'
-                    }), 200
-
-                session['voter_id'] = voter_id
-                session['csrf_token'] = secrets.token_urlsafe(40)
-                models.SessionsDB.add(session['voter_id'], session['csrf_token'])
-
+                token = models.Token({
+                    'voter_id': voter_id,
+                    'token': secrets.token_urlsafe(64)
+                })
+                models.TokensDB.add(token)
                 return jsonify({
-                    'message': 'voter successfully logged in'
+                    'message': 'voter successfully logged in',
+                    'token': token.token
                 }), 200
             return jsonify({
                 'message': 'wrong credentials'

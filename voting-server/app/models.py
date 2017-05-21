@@ -2,7 +2,7 @@ import time
 
 from passlib.hash import pbkdf2_sha512
 
-from app import db, validators
+from app import config, db, validators
 
 
 def result_to_json(result, first = False, last = False):
@@ -307,22 +307,38 @@ class PollsVotersDB:
         return result.rowcount
 
 
-class SessionsDB:
+class Token:
+    def __init__(self, data):
+        self.voter_id = data.get('voter_id')
+        self.token = data.get('token')
+        self.expiration_ts = data.get('expiration_ts')
+
+
+class TokensDB:
     @staticmethod
-    def add(voter_id, csrf_token):
+    def add(token):
         conn = db.connect()
         result = conn.execute(
-            "INSERT OR REPLACE INTO sessions(voter_id, csrf_token) VALUES(?, ?)",
-            [voter_id, csrf_token]
+            "INSERT OR REPLACE INTO tokens(voter_id, token, expiration_ts) VALUES(?, ?, ?)",
+            [token.voter_id, token.token, int(time.time()) + config.sessions.ttl]
         )
         return result.rowcount
 
     @staticmethod
-    def get(voter_id, csrf_token):
+    def check(token):
         conn = db.connect()
         result = conn.execute(
-            "SELECT * FROM sessions WHERE voter_id = ? AND csrf_token = ?",
-            [voter_id, csrf_token]
+            "SELECT * FROM tokens WHERE token = ? AND expiration_ts > ?",
+            [token, int(time.time())]
         )
         json = result_to_json(result, first = True)
-        return json
+        return Token(json) if json else None
+
+    @staticmethod
+    def update(token):
+        conn = db.connect()
+        result = conn.execute(
+            "UPDATE tokens SET expiration_ts = ? WHERE token = ?",
+            [int(time.time()) + config.sessions.ttl, token]
+        )
+        return result.rowcount

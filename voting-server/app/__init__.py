@@ -16,8 +16,8 @@ config = configs.parser(sys.argv[1])
 app = Flask(__name__)
 
 app.config['JSON_SORT_KEYS'] = False
-app.config['SESSION_COOKIE_SECURE'] = True
-app.config['PERMANENT_SESSION_LIFETIME'] = config.sessions.ttl
+# app.config['SESSION_COOKIE_SECURE'] = True
+# app.config['PERMANENT_SESSION_LIFETIME'] = config.sessions.ttl
 with open(config.sessions.secret, mode = 'r') as secret_key:
     app.config['SECRET_KEY'] = secret_key.read()
 
