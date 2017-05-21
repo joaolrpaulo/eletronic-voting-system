@@ -32,7 +32,6 @@ class MainPageStore extends EventEmitter {
 
                 User.setToken(token).toggleLoggedIn();
                 hashHistory.push('/voting');
-                sessionStorage.token = token;
             })
             .catch(() => {
                 const paragraphWrongCredentials = document.getElementById('wrong-credentials');
