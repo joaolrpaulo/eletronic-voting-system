@@ -11,4 +11,4 @@ def json_error(error):
 
 for code in default_exceptions.keys():
     app.register_error_handler(code, json_error)
-app.register_error_handler(Exception, json_error)
+# app.register_error_handler(Exception, json_error)

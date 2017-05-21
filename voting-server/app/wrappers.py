@@ -1,48 +1,42 @@
-from flask import session, request, jsonify
+from flask import request, jsonify
 
 from app import models
 
 
 def restricted(func):
     def decorator(*args, **kwargs):
-        voter_id = session.get('voter_id')
-        csrf_token = request.headers.get('X-CSRF-Token')
-        if not voter_id:
+        token = request.headers.get('Authorization')
+        if not token:
             return jsonify({
-                'message': 'voter is not logged in'
+                'message': 'The authorization token is missing.'
             }), 401
-        if not csrf_token:
-            return jsonify({
-                'message': 'The CSRF token is missing.'
-            })
-        if voter_id and models.SessionsDB.get(voter_id, csrf_token):
-            voter = models.VotersDB.get(voter_id)
+        token = models.TokensDB.check(token)
+        if token:
+            voter = models.VotersDB.get(token.voter_id)
             if voter and voter.admin:
-                return func(*args, **kwargs)
+                models.TokensDB.update(token.token)
+                return func(token_voter_id = token.voter_id, *args, **kwargs)
             return jsonify({
                 'message': 'permission denied'
             }), 403
         return jsonify({
-            'message': 'The CSRF token is invalid.'
+            'message': 'The authorization token is invalid.'
         }), 401
     return decorator
 
 
 def authenticate(func):
     def decorator(*args, **kwargs):
-        voter_id = session.get('voter_id')
-        csrf_token = request.headers.get('X-CSRF-Token')
-        if not voter_id:
+        token = request.headers.get('Authorization')
+        if not token:
             return jsonify({
-                'message': 'voter is not logged in'
+                'message': 'The authorization token is missing.'
             }), 401
-        if not csrf_token:
-            return jsonify({
-                'message': 'The CSRF token is missing.'
-            }), 403
-        if voter_id and models.SessionsDB.get(voter_id, csrf_token):
-            return func(*args, **kwargs)
+        token = models.TokensDB.check(token)
+        if token:
+            models.TokensDB.update(token.token)
+            return func(token_voter_id = token.voter_id, *args, **kwargs)
         return jsonify({
-            'message': 'The CSRF token is invalid.'
+            'message': 'The authorization token is invalid.'
         }), 401
     return decorator

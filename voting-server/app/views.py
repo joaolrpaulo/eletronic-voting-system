@@ -1,5 +1,5 @@
 import sqlalchemy
-from flask import abort, jsonify, request, session
+from flask import abort, jsonify, request
 
 from app import app, models, secrets, validators
 from app.wrappers import authenticate, restricted
@@ -14,18 +14,14 @@ def login():
         if validators.has_valid_body(request.json, models.VotersDB.fields()[:2], models.VotersDB.validators()[:2]):
             voter = models.VotersDB.get(voter_id)
             if voter and voter.verify_password(password):
-                session.permanent = True
-                if session.get('voter_id') and models.SessionsDB.get(voter_id, session.get('token')):
-                    return jsonify({
-                        'message': 'voter is already logged in'
-                    }), 200
-
-                session['voter_id'] = voter_id
-                session['csrf_token'] = secrets.token_urlsafe(40)
-                models.SessionsDB.add(session['voter_id'], session['csrf_token'])
-
+                token = models.Token({
+                    'voter_id': voter_id,
+                    'token': secrets.token_urlsafe(64)
+                })
+                models.TokensDB.add(token)
                 return jsonify({
-                    'message': 'voter successfully logged in'
+                    'message': 'voter successfully logged in',
+                    'token': token.token
                 }), 200
             return jsonify({
                 'message': 'wrong credentials'
@@ -39,20 +35,16 @@ def login():
 
 @app.route('/logout', methods = ['POST'], endpoint = 'logout')
 @authenticate
-def logout():
-    if session.get('voter_id'):
-        session.clear()
-        return jsonify({
-            'message': 'voter successfully logged out'
-        }), 200
+def logout(token_voter_id):
+    models.TokensDB.remove(token_voter_id)
     return jsonify({
-        'message': 'voter is not logged in'
-    }), 401
+        'message': 'voter successfully logged out'
+    }), 200
 
 
 @app.route('/voters', methods = ['POST'], endpoint = 'create_voter')
 @restricted
-def create_voter():
+def create_voter(token_voter_id):
     if request.headers.get('Content-Type') == 'application/json':
         if validators.has_valid_body(request.json, models.VotersDB.fields(), models.VotersDB.validators()):
             voter = models.Voter(request.json)
@@ -74,7 +66,7 @@ def create_voter():
 
 @app.route('/voters/<int:voter_id>', methods = ['GET'], endpoint = 'get_voter')
 @restricted
-def get_voter(voter_id):
+def get_voter(token_voter_id, voter_id):
     voter = models.VotersDB.get(voter_id)
     if voter:
         return jsonify(
@@ -87,7 +79,7 @@ def get_voter(voter_id):
 
 @app.route('/voters', methods = ['GET'], endpoint = 'get_all_voters')
 @restricted
-def get_all_voters():
+def get_all_voters(token_voter_id):
     return jsonify(
         [voter.to_dict() for voter in models.VotersDB.get_all()]
     ), 200
@@ -95,15 +87,15 @@ def get_all_voters():
 
 @app.route('/voter', methods = ['GET'], endpoint = 'get_authenticated_voter')
 @authenticate
-def get_authenticated_voter():
+def get_authenticated_voter(token_voter_id):
     return jsonify(
-        models.VotersDB.get(session.get('voter_id')).to_dict()
+        models.VotersDB.get(token_voter_id).to_dict()
     ), 200
 
 
 @app.route('/polls', methods = ['POST'], endpoint = 'create_poll')
 @restricted
-def create_poll():
+def create_poll(token_voter_id):
     if request.headers.get('Content-Type') == 'application/json':
         if validators.has_valid_body(request.json, models.PollsDB.fields(), models.PollsDB.validators()):
             poll = models.Poll(request.json)
@@ -120,8 +112,8 @@ def create_poll():
 
 @app.route('/polls/<int:poll_id>', methods = ['GET'], endpoint = 'get_poll')
 @authenticate
-def get_poll(poll_id):
-    poll = models.PollsVotersDB.get_voter_poll(session.get('voter_id'), poll_id)
+def get_poll(token_voter_id, poll_id):
+    poll = models.PollsVotersDB.get_voter_poll(token_voter_id, poll_id)
     if poll:
         return jsonify(
             poll.to_dict()
@@ -133,7 +125,27 @@ def get_poll(poll_id):
 
 @app.route('/polls', methods = ['GET'], endpoint = 'get_all_polls')
 @authenticate
-def get_all_polls():
+def get_all_polls(token_voter_id):
     return jsonify(
-        [poll.to_dict() for poll in models.PollsDB.get_all()]
+        [poll.to_dict() for poll in models.PollsVotersDB.get_voter_polls(token_voter_id, all_polls = True)]
     ), 200
+
+
+@app.route('/vote/<int:item_id>', methods = ['POST'], endpoint = 'make_vote')
+@authenticate
+def make_vote(token_voter_id, item_id):
+    item_poll = models.PollsItemsDB.get_poll(item_id)
+    if item_poll:
+        poll = models.PollsVotersDB.get_voter_poll(token_voter_id, item_poll.poll_id)
+        if poll:
+            if models.PollsVotersDB.can_vote(poll.poll_id, token_voter_id):
+                models.PollsDB.vote(poll.poll_id, token_voter_id, item_id)
+                return jsonify({
+                    'message': 'vote successfully registered'
+                }), 201
+            return jsonify({
+                'message': 'you can\'t vote twice in the same poll'
+            }), 403
+    return jsonify({
+        'message': 'item_id not found'
+    }), 404

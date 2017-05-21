@@ -2,7 +2,7 @@ import time
 
 from passlib.hash import pbkdf2_sha512
 
-from app import db, validators
+from app import config, db, validators
 
 
 def result_to_json(result, first = False, last = False):
@@ -65,7 +65,7 @@ class VotersDB:
             "SELECT * FROM voters"
         )
         json = result_to_json(result)
-        return [Voter(voter) for voter in json] if json else None
+        return [Voter(voter) for voter in json] if json else []
 
     @staticmethod
     def delete(voter_id):
@@ -107,7 +107,8 @@ class Poll:
             'image': self.image,
             'begin_ts': self.begin_ts,
             'end_ts': self.end_ts,
-            'available_at': self.available_at
+            'available_at': self.available_at,
+            'items': [item.to_dict() for item in PollsItemsDB.get_poll_items(self.poll_id)]
         }
 
 
@@ -138,7 +139,7 @@ class PollsDB:
             "SELECT * FROM polls"
         )
         json = result_to_json(result)
-        return [Poll(poll) for poll in json] if json else None
+        return [Poll(poll) for poll in json] if json else []
 
     @staticmethod
     def delete(poll_id):
@@ -154,6 +155,19 @@ class PollsDB:
             result = conn.execute(
                 "DELETE FROM polls WHERE poll_id = ?",
                 [poll_id]
+            )
+        return result.rowcount
+
+    @staticmethod
+    def vote(poll_id, voter_id, item_id):
+        with db.begin() as conn:
+            conn.execute(
+                "UPDATE polls_voters SET voted = 1 WHERE poll_id = ? AND voter_id = ?",
+                [poll_id, voter_id]
+            )
+            result = conn.execute(
+                "UPDATE polls_items SET votes = votes + 1 WHERE item_id = ?",
+                [item_id]
             )
         return result.rowcount
 
@@ -203,6 +217,16 @@ class PollsItemsDB:
         return PollItem(json) if json else None
 
     @staticmethod
+    def get_poll(item_id):
+        conn = db.connect()
+        result = conn.execute(
+            "SELECT * FROM polls WHERE poll_id IN (SELECT poll_id FROM polls_items WHERE item_id = ?)",
+            [item_id]
+        )
+        json = result_to_json(result, first = True)
+        return Poll(json) if json else None
+
+    @staticmethod
     def get_poll_items(poll_id):
         conn = db.connect()
         result = conn.execute(
@@ -210,7 +234,7 @@ class PollsItemsDB:
             [poll_id]
         )
         json = result_to_json(result)
-        return [PollItem(item) for item in json] if json else None
+        return [PollItem(item) for item in json] if json else []
 
     @staticmethod
     def get_all():
@@ -219,7 +243,7 @@ class PollsItemsDB:
             "SELECT * FROM polls_items"
         )
         json = result_to_json(result)
-        return [PollItem(item) for item in json] if json else None
+        return [PollItem(item) for item in json] if json else []
 
     @staticmethod
     def delete(item_id):
@@ -286,7 +310,17 @@ class PollsVotersDB:
                 [voter_id, time_now, time_now]
             )
         json = result_to_json(result)
-        return [Poll(poll) for poll in json] if json else None
+        return [Poll(poll) for poll in json] if json else []
+
+    @staticmethod
+    def can_vote(poll_id, voter_id):
+        conn = db.connect()
+        result = conn.execute(
+            "SELECT * FROM polls_voters WHERE poll_id = ? AND voter_id = ? AND voted = 0",
+            [poll_id, voter_id]
+        )
+        json = result_to_json(result, first = True)
+        return json
 
     @staticmethod
     def delete(poll_id, voter_id):
@@ -307,22 +341,47 @@ class PollsVotersDB:
         return result.rowcount
 
 
-class SessionsDB:
+class Token:
+    def __init__(self, data):
+        self.voter_id = data.get('voter_id')
+        self.token = data.get('token')
+        self.expiration_ts = data.get('expiration_ts')
+
+
+class TokensDB:
     @staticmethod
-    def add(voter_id, csrf_token):
+    def add(token):
         conn = db.connect()
         result = conn.execute(
-            "INSERT OR REPLACE INTO sessions(voter_id, csrf_token) VALUES(?, ?)",
-            [voter_id, csrf_token]
+            "INSERT OR REPLACE INTO tokens(voter_id, token, expiration_ts) VALUES(?, ?, ?)",
+            [token.voter_id, token.token, int(time.time()) + config.sessions.ttl]
         )
         return result.rowcount
 
     @staticmethod
-    def get(voter_id, csrf_token):
+    def check(token):
         conn = db.connect()
         result = conn.execute(
-            "SELECT * FROM sessions WHERE voter_id = ? AND csrf_token = ?",
-            [voter_id, csrf_token]
+            "SELECT * FROM tokens WHERE token = ? AND expiration_ts > ?",
+            [token, int(time.time())]
         )
         json = result_to_json(result, first = True)
-        return json
+        return Token(json) if json else None
+
+    @staticmethod
+    def update(token):
+        conn = db.connect()
+        result = conn.execute(
+            "UPDATE tokens SET expiration_ts = ? WHERE token = ?",
+            [int(time.time()) + config.sessions.ttl, token]
+        )
+        return result.rowcount
+
+    @staticmethod
+    def remove(voter_id):
+        conn = db.connect()
+        result = conn.execute(
+            "DELETE FROM tokens WHERE voter_id = ?",
+            [voter_id]
+        )
+        return result.rowcount
