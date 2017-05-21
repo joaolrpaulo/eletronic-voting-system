@@ -1,7 +1,6 @@
 class User {
     constructor () {
         this.name = '';
-        this.token = '';
         this.city = '';
         this.email = '';
         this.isLoggedIn = false;
@@ -20,7 +19,7 @@ class User {
     }
 
     getToken () {
-        return this.token;
+        return sessionStorage.getItem('token');
     }
 
     getCity () {
@@ -37,7 +36,7 @@ class User {
     }
 
     setToken (token) {
-        this.token = token;
+        sessionStorage.token = token;
         return this;
     }
 

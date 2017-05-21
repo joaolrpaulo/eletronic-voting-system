@@ -10,7 +10,7 @@ export const axiosConfig = {
     },
     get: function (token) {
         return {
-            headers: {'Authorization': 'Bearer ' + token}
+            headers: {'Authorization': token}
         };
     }
 };
