@@ -35,15 +35,11 @@ def login():
 
 @app.route('/logout', methods = ['POST'], endpoint = 'logout')
 @authenticate
-def logout():
-    if session.get('voter_id'):
-        session.clear()
-        return jsonify({
-            'message': 'voter successfully logged out'
-        }), 200
+def logout(token_voter_id):
+    models.TokensDB.remove(voter_id)
     return jsonify({
-        'message': 'voter is not logged in'
-    }), 401
+        'message': 'voter successfully logged out'
+    }), 200
 
 
 @app.route('/voters', methods = ['POST'], endpoint = 'create_voter')
@@ -91,9 +87,9 @@ def get_all_voters():
 
 @app.route('/voter', methods = ['GET'], endpoint = 'get_authenticated_voter')
 @authenticate
-def get_authenticated_voter():
+def get_authenticated_voter(token_voter_id):
     return jsonify(
-        models.VotersDB.get(session.get('voter_id')).to_dict()
+        models.VotersDB.get(token_voter_id).to_dict()
     ), 200
 
 
@@ -116,8 +112,8 @@ def create_poll():
 
 @app.route('/polls/<int:poll_id>', methods = ['GET'], endpoint = 'get_poll')
 @authenticate
-def get_poll(poll_id):
-    poll = models.PollsVotersDB.get_voter_poll(session.get('voter_id'), poll_id)
+def get_poll(token_voter_id, poll_id):
+    poll = models.PollsVotersDB.get_voter_poll(token_voter_id, poll_id)
     if poll:
         return jsonify(
             poll.to_dict()
@@ -129,7 +125,7 @@ def get_poll(poll_id):
 
 @app.route('/polls', methods = ['GET'], endpoint = 'get_all_polls')
 @authenticate
-def get_all_polls():
+def get_all_polls(token_voter_id):
     return jsonify(
-        [poll.to_dict() for poll in models.PollsDB.get_all()]
+        [poll.to_dict() for poll in models.PollsVotersDB.get_voter_polls(token_voter_id, all_polls=True)]
     ), 200

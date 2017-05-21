@@ -15,7 +15,7 @@ def restricted(func):
             voter = models.VotersDB.get(token.voter_id)
             if voter and voter.admin:
                 models.TokensDB.update(token.token)
-                return func(*args, **kwargs)
+                return func(token_voter_id=token.voter_id, *args, **kwargs)
             return jsonify({
                 'message': 'permission denied'
             }), 403
@@ -35,7 +35,7 @@ def authenticate(func):
         token = models.TokensDB.check(token)
         if token:
             models.TokensDB.update(token.token)
-            return func(*args, **kwargs)
+            return func(token_voter_id=token.voter_id, *args, **kwargs)
         return jsonify({
             'message': 'The authorization token is invalid.'
         }), 401

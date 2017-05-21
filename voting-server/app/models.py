@@ -342,3 +342,12 @@ class TokensDB:
             [int(time.time()) + config.sessions.ttl, token]
         )
         return result.rowcount
+
+    @staticmethod
+    def remove(voter_id):
+        conn = db.connect()
+        result = conn.execute(
+            "DELETE FROM tokens WHERE voter_id = ?",
+            [voter_id]
+        )
+        return result.rowcount

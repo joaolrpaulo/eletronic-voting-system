@@ -30,7 +30,9 @@ CREATE TABLE IF NOT EXISTS polls_voters(
     PRIMARY KEY(poll_id, voter_id)
 );
 
-CREATE TABLE IF NOT EXISTS sessions(
-    voter_id INTEGER PRIMARY KEY NOT NULL,
-    csrf_token VARCHAR(64) NOT NULL
+CREATE TABLE IF NOT EXISTS tokens(
+    voter_id INTEGER NOT NULL,
+    token VARCHAR(64) NOT NULL,
+    expiration_ts integer NOT NULL,
+    PRIMARY KEY(voter_id)
 );
