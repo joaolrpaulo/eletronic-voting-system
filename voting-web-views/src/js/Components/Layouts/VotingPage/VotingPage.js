@@ -27,10 +27,11 @@ export default class VotingPage extends React.Component {
         const polls = VotingPageStore.getAll();
         const pollsHtml = polls.map(poll => {
             return <Card
-                       key={poll.id}
+                       key={poll.poll_id}
                        title={poll.title}
                        description={poll.description}
                        imgSrc="https://mdbootstrap.com/img/Photos/Horizontal/Nature/4-col/img%20%287%29.jpg"
+                       items={poll.items}
                    />;
         });
 
