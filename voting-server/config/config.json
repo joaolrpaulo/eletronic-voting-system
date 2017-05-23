@@ -19,5 +19,10 @@
     "sessions": {
         "secret": "certs/flask-secret.key",
         "ttl": 300
+    },
+
+    "certs": {
+        "pubkey": "certs/rsa_4096_pub.pem",
+        "privkey": "certs/rsa_4096_priv.pem"
     }
 }

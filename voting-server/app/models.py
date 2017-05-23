@@ -159,16 +159,12 @@ class PollsDB:
         return result.rowcount
 
     @staticmethod
-    def vote(poll_id, voter_id, item_id):
-        with db.begin() as conn:
-            conn.execute(
-                "UPDATE polls_voters SET voted = 1 WHERE poll_id = ? AND voter_id = ?",
-                [poll_id, voter_id]
-            )
-            result = conn.execute(
-                "UPDATE polls_items SET votes = votes + 1 WHERE item_id = ?",
-                [item_id]
-            )
+    def vote(poll_id, voter_id):
+        conn = db.connect()
+        result = conn.execute(
+            "UPDATE polls_voters SET voted = 1 WHERE poll_id = ? AND voter_id = ?",
+            [poll_id, voter_id]
+        )
         return result.rowcount
 
     @staticmethod
@@ -383,5 +379,20 @@ class TokensDB:
         result = conn.execute(
             "DELETE FROM tokens WHERE voter_id = ?",
             [voter_id]
+        )
+        return result.rowcount
+
+class Vote:
+    def __init__(self, json):
+        self.item = json.get('item')
+        self.identifier = json.get('identifier')
+
+class ItemIdentifiers:
+    @staticmethod
+    def add(vote):
+        conn = db.connect()
+        result = conn.execute(
+            "INSERT INTO item_votes(item, identifier) VALUES(?, ?)",
+            [vote.item, vote.identifier]
         )
         return result.rowcount

@@ -1,7 +1,9 @@
 import sqlalchemy
+import json
+
 from flask import abort, jsonify, request
 
-from app import app, models, secrets, validators
+from app import app, models, secrets, validators, rsa_utils
 from app.wrappers import authenticate, restricted
 
 
@@ -131,21 +133,24 @@ def get_all_polls(token_voter_id):
     ), 200
 
 
-@app.route('/vote/<int:item_id>', methods = ['POST'], endpoint = 'make_vote')
+@app.route('/vote/<int:poll_id>', methods = ['POST'], endpoint = 'make_vote')
 @authenticate
-def make_vote(token_voter_id, item_id):
-    item_poll = models.PollsItemsDB.get_poll(item_id)
-    if item_poll:
-        poll = models.PollsVotersDB.get_voter_poll(token_voter_id, item_poll.poll_id)
+def make_vote(token_voter_id, poll_id):
+    if request.headers.get('Content-Type') == 'application/json':
+        message = request.json.get('message')
+        vote = rsa_utils.decrypt(message)
+        vote = models.Vote(json.loads(vote))
+        poll = models.PollsVotersDB.get_voter_poll(token_voter_id, poll_id)
+
         if poll:
             if models.PollsVotersDB.can_vote(poll.poll_id, token_voter_id):
-                models.PollsDB.vote(poll.poll_id, token_voter_id, item_id)
+                models.PollsDB.vote(poll.poll_id, token_voter_id)
+                models.ItemIdentifiers.add(vote)
                 return jsonify({
-                    'message': 'vote successfully registered'
-                }), 201
+                    'message': 'vote registered'
+                }), 200
             return jsonify({
-                'message': 'you can\'t vote twice in the same poll'
-            }), 403
-    return jsonify({
-        'message': 'item_id not found'
-    }), 404
+                'message': 'already voted in this poll!'
+            }), 406
+        return abort(401)
+    return abort(415)
