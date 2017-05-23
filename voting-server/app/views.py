@@ -1,139 +1,151 @@
-import time
-
 import sqlalchemy
 from flask import abort, jsonify, request
-from flask_cors import cross_origin
 
-from app import app, config, models, validators
-from app.crypto import JWT
-from app.wrappers import login_required, restricted
+from app import app, models, secrets, validators
+from app.wrappers import authenticate, restricted
 
 
-@app.route("/login", methods = ['POST'])
-@cross_origin()
+@app.route('/login', methods = ['POST'])
 def login():
     if request.headers.get('Content-Type') == 'application/json':
         voter_id = request.json.get('voter_id')
         password = request.json.get('password')
 
-        missing = []
-        if not voter_id:
-            missing.append('voter_id')
-        if not password:
-            missing.append('password')
-
-        if not missing:
+        if validators.has_valid_body(request.json, models.VotersDB.fields()[:2], models.VotersDB.validators()[:2]):
             voter = models.VotersDB.get(voter_id)
             if voter and voter.verify_password(password):
+                token = models.Token({
+                    'voter_id': voter_id,
+                    'token': secrets.token_urlsafe(64)
+                })
+                models.TokensDB.add(token)
                 return jsonify({
-                    'token': JWT(config.jwt.secret).encrypt({
-                        'voter_id': voter_id,
-                        'iat': int(time.time()),
-                        'exp': int(time.time()) + config.tokens.ttl
-                    }),
-                    'expiration_ts': int(time.time())
-                }), 201
+                    'message': 'voter successfully logged in',
+                    'token': token.token
+                }), 200
             return jsonify({
                 'message': 'wrong credentials'
             }), 401
         return jsonify({
             'message': 'validation failed',
-            'errors': {
-                'missing': missing
-            }
+            'errors': validators.get_body_errors(request.json, models.VotersDB.fields()[:2], models.VotersDB.validators()[:2])
         }), 422
     return abort(415)
 
 
+@app.route('/logout', methods = ['POST'], endpoint = 'logout')
+@authenticate
+def logout(token_voter_id):
+    models.TokensDB.remove(token_voter_id)
+    return jsonify({
+        'message': 'voter successfully logged out'
+    }), 200
+
+
 @app.route('/voters', methods = ['POST'], endpoint = 'create_voter')
-@cross_origin()
 @restricted
-@login_required
-def create_voter():
+def create_voter(token_voter_id):
     if request.headers.get('Content-Type') == 'application/json':
         if validators.has_valid_body(request.json, models.VotersDB.fields(), models.VotersDB.validators()):
             voter = models.Voter(request.json)
             try:
                 voter_id = models.VotersDB.add(voter)
             except sqlalchemy.exc.IntegrityError:
-                return {
+                return jsonify({
                     'message': 'voter_id already exists'
-                }, 409
-            return {
+                }), 409
+            return jsonify({
                 'message': 'voter was successfully registered',
-            }, 201, {'Location': '/voters/%d' % voter_id}
-        return {
+            }), 201, {'Location': '/voters/%d' % voter_id}
+        return jsonify({
             'message': 'validation failed',
             'errors': validators.get_body_errors(request.json, models.VotersDB.fields(), models.VotersDB.validators())
-        }, 422
+        }), 422
     return abort(415)
 
 
-@app.route("/voters/<int:voter_id>", methods = ['GET'], endpoint = 'get_single_voter')
-@cross_origin()
+@app.route('/voters/<int:voter_id>', methods = ['GET'], endpoint = 'get_voter')
 @restricted
-@login_required
-def get_single_voter(voter_id):
+def get_voter(token_voter_id, voter_id):
     voter = models.VotersDB.get(voter_id)
     if voter:
-        return voter.to_dict(), 200
-    return {
+        return jsonify(
+            voter.to_dict()
+        ), 200
+    return jsonify({
         'message': 'voter_id not found'
-    }, 404
+    }), 404
 
 
-@app.route("/voters", methods = ['GET'], endpoint = 'get_voter')
-@cross_origin()
-@login_required
-def get_voter():
-    token = request.headers.get('Authorization')
-    if token and token.startswith('Bearer '):
-        token = token.replace('Bearer ', '')
-        voter_id = JWT(config.jwt.secret).decrypt(token).get('voter_id')
-
-        return models.VotersDB.get(voter_id).to_dict(), 200
-
-
-@app.route("/polls", methods = ['POST'], endpoint = 'create_poll')
-@cross_origin()
+@app.route('/voters', methods = ['GET'], endpoint = 'get_all_voters')
 @restricted
-@login_required
-def create_poll():
+def get_all_voters(token_voter_id):
+    return jsonify(
+        [voter.to_dict() for voter in models.VotersDB.get_all()]
+    ), 200
+
+
+@app.route('/voter', methods = ['GET'], endpoint = 'get_authenticated_voter')
+@authenticate
+def get_authenticated_voter(token_voter_id):
+    return jsonify(
+        models.VotersDB.get(token_voter_id).to_dict()
+    ), 200
+
+
+@app.route('/polls', methods = ['POST'], endpoint = 'create_poll')
+@restricted
+def create_poll(token_voter_id):
     if request.headers.get('Content-Type') == 'application/json':
         if validators.has_valid_body(request.json, models.PollsDB.fields(), models.PollsDB.validators()):
             poll = models.Poll(request.json)
             poll_id = models.PollsDB.add(poll)
-            return {
+            return jsonify({
                 'message': 'poll was successfully registered',
-            }, 201, {'Location': '/polls/%d' % poll_id}
-        return {
+            }), 201, {'Location': '/polls/%d' % poll_id}
+        return jsonify({
             'message': 'validation failed',
             'errors': validators.get_body_errors(request.json, models.PollsDB.fields(), models.PollsDB.validators())
-        }, 422
-    return {
-        'message': 'content-type not supported'
-    }, 415
+        }), 422
+    return abort(415)
 
 
-@app.route("/polls/<int:poll_id>", methods = ['GET'], endpoint = 'get_poll')
-@cross_origin()
-@login_required
-def get_poll(poll_id):
-    poll = models.PollsDB.get(poll_id)
+@app.route('/polls/<int:poll_id>', methods = ['GET'], endpoint = 'get_poll')
+@authenticate
+def get_poll(token_voter_id, poll_id):
+    poll = models.PollsVotersDB.get_voter_poll(token_voter_id, poll_id)
     if poll:
-        return poll.to_dict(), 200
-    return {
+        return jsonify(
+            poll.to_dict()
+        ), 200
+    return jsonify({
         'message': 'poll_id not found'
-    }, 404
+    }), 404
 
 
-@app.route("/polls", methods = ['GET'], endpoint = 'get_all_polls')
-@cross_origin()
-@login_required
-def get_all_polls():
-    polls = models.PollsDB.get_all()
-    if polls:
-        return [poll.to_dict() for poll in polls], 200
-    return {
-        'message': 'no polls available'
-    }, 404
+@app.route('/polls', methods = ['GET'], endpoint = 'get_all_polls')
+@authenticate
+def get_all_polls(token_voter_id):
+    return jsonify(
+        [poll.to_dict() for poll in models.PollsVotersDB.get_voter_polls(token_voter_id, all_polls = True)]
+    ), 200
+
+
+@app.route('/vote/<int:item_id>', methods = ['POST'], endpoint = 'make_vote')
+@authenticate
+def make_vote(token_voter_id, item_id):
+    item_poll = models.PollsItemsDB.get_poll(item_id)
+    if item_poll:
+        poll = models.PollsVotersDB.get_voter_poll(token_voter_id, item_poll.poll_id)
+        if poll:
+            if models.PollsVotersDB.can_vote(poll.poll_id, token_voter_id):
+                models.PollsDB.vote(poll.poll_id, token_voter_id, item_id)
+                return jsonify({
+                    'message': 'vote successfully registered'
+                }), 201
+            return jsonify({
+                'message': 'you can\'t vote twice in the same poll'
+            }), 403
+    return jsonify({
+        'message': 'item_id not found'
+    }), 404

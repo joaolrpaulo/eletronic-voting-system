@@ -11,6 +11,7 @@ export default class Card extends React.Component {
             modalIsOpen: false
         };
     }
+
     vote() {
         const radioButtons = document.getElementsByClassName('radio_button');
         for (let i = 0; i < radioButtons.length; i++) {

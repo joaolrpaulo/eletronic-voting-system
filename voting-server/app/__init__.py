@@ -2,19 +2,26 @@ import sqlite3
 import sys
 
 from flask import Flask
-from sqlalchemy import create_engine
 from flask_cors import CORS
+from sqlalchemy import create_engine
 
 from app import configs
 
 
-# Initialize the app
-app = Flask(__name__)
-app.config['JSON_SORT_KEYS'] = False
-CORS(app)
-
 # Parse app configs
 config = configs.parser(sys.argv[1])
+
+
+# Initialize the app
+app = Flask(__name__)
+
+app.config['JSON_SORT_KEYS'] = False
+# app.config['SESSION_COOKIE_SECURE'] = True
+# app.config['PERMANENT_SESSION_LIFETIME'] = config.sessions.ttl
+with open(config.sessions.secret, mode = 'r') as secret_key:
+    app.config['SECRET_KEY'] = secret_key.read()
+
+cors = CORS(app)
 
 
 # Connect to database
@@ -30,5 +37,3 @@ with open(config.database.schema, mode = 'r') as schema, sqlite3.connect(config.
 from app import errors
 # noinspection PyUnresolvedReferences
 from app import views
-# noinspection PyUnresolverReferences
-from app import schedulers
