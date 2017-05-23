@@ -1,4 +1,25 @@
+<rt-import name="*" as="e" from="elemental"/>
+
 <div class="card voting-card">
+  <e.Modal isOpen={this.state.modalIsOpen} onCancel={this.toggleModal.bind(this)} backdropClosesModal>
+    <e.ModalHeader text={this.props.title} showCloseButton onClose={this.toggleModal} />
+    <e.ModalBody>
+      {this.props.description}
+      <div key={itemIndex} rt-repeat="item in this.props.items">
+        <div>
+          <label>
+            <input id={item.item_id} class="radio_button" type="radio" name="myBtn" value={item.description}/>
+            <span>{item.description}</span>
+          </label>
+          <br/>
+        </div>
+      </div>
+    </e.ModalBody>
+    <e.ModalFooter>
+      <button type="button" class="btn btn-primary waves-effect waves-light" onClick={this.vote.bind(this)}>Vote</button>
+      <button type="button" class="btn btn-danger waves-effect waves-light" onClick={this.toggleModal.bind(this)}>Close</button>
+    </e.ModalFooter>
+  </e.Modal>
   <div class="view overlay hm-white-slight">
     <img src={this.props.imgSrc} class="img-fluid round-image" alt=""/>
     <a href="#">
@@ -10,34 +31,6 @@
     <h4 class="card-title">
       <p class="poll-name" data-toggle="collapse" data-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample">{this.props.title}</p>
     </h4>
-    <button type="button" class="btn btn-primary waves-effect waves-light" data-toggle="modal" data-target="#fullHeightModalRight">Vote</button>
-    <div class="modal fade right" id="fullHeightModalRight" role="dialog" tabIndex="-1" aria-labelledby="myModalLabel" aria-hidden="true">
-      <div class="modal-dialog modal-full-height modal-right" role="document">
-        <div class="modal-content">
-          <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-              <span aria-hidden="true">×</span>
-            </button>
-            <h4 class="modal-title w-100" id="myModalLabel">{this.props.title}</h4>
-          </div>
-          <div class="modal-body">
-            <p>{this.props.description}</p>
-            <div key={itemIndex} rt-repeat="item in this.props.items">
-              <div>
-                <label>
-                  <input class="radio_button" type="radio" name="myBtn" value={item.description}/>
-                  <span>{item.description}</span>
-                </label>
-              <br/>
-              </div>
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary waves-effect waves-light" data-dismiss="modal">Close</button>
-            <button type="button" onClick={this.vote.bind(this)} class="btn btn-primary waves-effect waves-light">Vote</button>
-          </div>
-        </div>
-      </div>
-    </div>
+    <button type="button" class="btn btn-primary waves-effect waves-light" onClick={this.toggleModal.bind(this)}>Vote</button>
   </div>
 </div>

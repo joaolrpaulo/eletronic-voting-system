@@ -40,3 +40,12 @@ html, body, header, .view-fullscreen {
 @import "votingPage";
 @import "navbar";
 @import "mainPage";
+@import 'styles.min';
+
+h2 {
+    color: white;
+}
+
+fieldset {
+    border: none !important;
+}

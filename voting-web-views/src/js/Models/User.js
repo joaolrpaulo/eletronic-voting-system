@@ -19,7 +19,8 @@ class User {
     }
 
     getToken () {
-        return sessionStorage.getItem('token');
+        const token = sessionStorage.getItem('token');
+        return token;
     }
 
     getCity () {
@@ -36,7 +37,7 @@ class User {
     }
 
     setToken (token) {
-        sessionStorage.token = token;
+        sessionStorage.setItem('token', token);
         return this;
     }
 
