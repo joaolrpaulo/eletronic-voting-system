@@ -5,13 +5,27 @@
     <e.ModalHeader text={this.props.title} showCloseButton onClose={this.toggleModal} />
     <e.ModalBody>
       {this.props.description}
-      <div key={itemIndex} rt-repeat="item in this.props.items">
-        <div>
-          <label>
-            <input id={item.item_id} class="radio_button" type="radio" name="myBtn" value={item.description}/>
-            <span>{item.description}</span>
-          </label>
-          <br/>
+      <div rt-if="!this.props.ended">
+        <div key={itemIndex}  rt-repeat="item in this.props.items">
+          <div>
+            <label>
+              <input id={item.item_id} class="radio_button" type="radio" name="myBtn" value={item.description}/>
+              <span>{item.description}</span>
+            </label>
+            <br/>
+          </div>
+        </div>
+      </div>
+      <br/>
+      <br/>
+      <div rt-if="this.props.ended">
+        Results:
+        <div key={itemIndex}  rt-repeat="item in this.props.items">
+          <b>{item.description}</b>
+          {item.item_identifiers.length}
+          <div key={item2Index}  rt-repeat="item2 in item.item_identifiers">
+            {item2}
+          </div>
         </div>
       </div>
     </e.ModalBody>

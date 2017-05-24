@@ -13,6 +13,14 @@ class VotingPageStore extends EventEmitter {
         axiosMethods.get('/polls')
             .then((response) => {
                 this.polls = response.data;
+
+                for (let i = 0; i < this.polls.length; i++) {
+                    this.polls[i].ended = false;
+                    if (this.polls[i].end_ts < (Date.now() / 1000)) {
+                        this.polls[i].ended = true;
+                    }
+                }
+                console.log(this.polls);
                 this.emit('change');
             })
             .catch((error) => {

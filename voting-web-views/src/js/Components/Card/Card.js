@@ -1,7 +1,9 @@
 import React from 'react';
+import srs from 'secure-random-string';
 
 import CardTemplate from './Card.rt';
 import { axiosMethods } from 'Utils/configs.js';
+import { SERVER_PUBLIC_KEY } from 'Utils/globals';
 
 export default class Card extends React.Component {
     constructor () {
@@ -12,28 +14,67 @@ export default class Card extends React.Component {
         };
     }
 
-    vote() {
+    generateObject () {
         const radioButtons = document.getElementsByClassName('radio_button');
+        const encrypt = new JSEncrypt();
+        encrypt.setPublicKey(SERVER_PUBLIC_KEY);
+
+        const voteId = this.getVoteId();
+        const item = radioButtons[voteId].id;
+        const identifier = srs({ length: 128 });
+        let encryptedObject = {
+            item,
+            identifier
+        };
+        encryptedObject = JSON.stringify(encryptedObject);
+        encryptedObject = encrypt.encrypt(encryptedObject);
+        return encryptedObject;
+    }
+
+    getVoteId () {
+        const radioButtons = document.getElementsByClassName('radio_button');
+        let voteId = -1;
         for (let i = 0; i < radioButtons.length; i++) {
             if (radioButtons[i].checked) {
-                const body = {};
-                axiosMethods.post('/vote/' + radioButtons[i].id, body)
-                            .then(response => {
-                                swal('Good job!', 'You clicked the button!', 'success');
-                            })
-                            .catch(error => {
-                                switch (error.response.status) {
-                                    case 403: {
-                                        swal('Error', 'You can only vote once for each poll', 'error');
-                                    }
-                                }
-                            });
+                voteId = i;
                 break;
             }
         }
-        this.setState({
-            modalIsOpen: false
-        });
+        return voteId;
+    }
+
+    voteIsAcceptable () {
+        const voteId = this.getVoteId();
+        if (voteId === -1) {
+            return false;
+        }
+        return true;
+    }
+
+    vote() {
+        if (!this.voteIsAcceptable()) {
+            swal('Error', 'You must choose a party', 'error');
+            return;
+        }
+
+        const body = {
+            message: this.generateObject()
+        };
+        axiosMethods.post('/vote/' + this.props.poll_id, body)
+                    .then(response => {
+                        setTimeout(() => {
+                            swal('Good job!', 'You have successfully voted for this poll', 'success');
+                            this.setState({
+                                modalIsOpen: false
+                            });
+                        }, 1000);
+                    })
+                    .catch(error => {
+                        setTimeout(() => {
+                            swal('Error', 'An error occured while voting', 'error');
+                        }, 1000);
+                    });
+
     }
 
     toggleModal () {
