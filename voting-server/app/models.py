@@ -189,7 +189,7 @@ class PollItem:
 
     def to_dict(self):
         return {
-            'poll_id': self.poll_id,
+            'item_id': self.item_id,
             'title': self.title,
             'description': self.description,
             'item_identifiers': [item.to_dict() for item in ItemIdentifiers.get(self.item_id)]

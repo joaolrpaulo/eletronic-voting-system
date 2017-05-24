@@ -35,7 +35,7 @@ def check_for_new_polls():
         for vote in votes:
             vote = models.Vote(json.loads(vote))
 
-            if vote.item in items:
+            if vote.item != '' and int(vote.item) in items:
                 if vote.item not in items_votes:
                     items_votes[vote.item] = {
                         'count': 0,
