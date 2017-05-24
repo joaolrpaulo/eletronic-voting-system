@@ -7,7 +7,6 @@ from sqlalchemy import create_engine
 
 from app import configs
 
-
 # Parse app configs
 config = configs.parser(sys.argv[1])
 
@@ -23,7 +22,6 @@ with open(config.sessions.secret, mode = 'r') as secret_key:
 
 cors = CORS(app)
 
-
 # Connect to database
 db = create_engine('sqlite:///' + config.database.location)
 
@@ -32,8 +30,12 @@ with open(config.database.schema, mode = 'r') as schema, sqlite3.connect(config.
     cursor = conn.cursor()
     cursor.executescript(schema.read())
 
-
 # noinspection PyUnresolvedReferences
 from app import errors
 # noinspection PyUnresolvedReferences
 from app import views
+from app import schedulers
+
+@app.before_first_request
+def start_threads():
+    schedulers.scheduler.start()

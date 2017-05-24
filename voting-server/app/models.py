@@ -159,12 +159,16 @@ class PollsDB:
         return result.rowcount
 
     @staticmethod
-    def vote(poll_id, voter_id):
-        conn = db.connect()
-        result = conn.execute(
-            "UPDATE polls_voters SET voted = 1 WHERE poll_id = ? AND voter_id = ?",
-            [poll_id, voter_id]
-        )
+    def vote(poll_id, voter_id, message):
+        with db.begin() as conn:
+            conn.execute(
+                "UPDATE polls_voters SET voted = 1 WHERE poll_id = ? AND voter_id = ?",
+                [poll_id, voter_id]
+            )
+            result = conn.execute(
+                "INSERT INTO messages(poll_id, message) VALUES(?, ?)",
+                [poll_id, message]
+            )
         return result.rowcount
 
     @staticmethod
@@ -185,10 +189,10 @@ class PollItem:
 
     def to_dict(self):
         return {
-            'item_id': self.item_id,
             'poll_id': self.poll_id,
             'title': self.title,
-            'description': self.description
+            'description': self.description,
+            'item_identifiers': [item.to_dict() for item in ItemIdentifiers.get(self.item_id)]
         }
 
 
@@ -382,10 +386,15 @@ class TokensDB:
         )
         return result.rowcount
 
+
 class Vote:
     def __init__(self, json):
         self.item = json.get('item')
         self.identifier = json.get('identifier')
+
+    def to_dict(self):
+        return self.identifier
+
 
 class ItemIdentifiers:
     @staticmethod
@@ -396,3 +405,13 @@ class ItemIdentifiers:
             [vote.item, vote.identifier]
         )
         return result.rowcount
+
+    @staticmethod
+    def get(item):
+        conn = db.connect()
+        result = conn.execute(
+            "SELECT * FROM item_votes WHERE item = ?",
+            [item]
+        )
+        items = result_to_json(result)
+        return [Vote(item) for item in items]

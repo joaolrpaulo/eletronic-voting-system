@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS polls(
     begin_ts INTEGER NOT NULL,
     end_ts INTEGER NOT NULL,
     available_at INTEGER NOT NULL,
+    already_counted INTEGER NOT NULL DEFAULT 0,
     frauds INTEGER NOT NULL DEFAULT 0
 );
 
@@ -43,4 +44,10 @@ CREATE TABLE IF NOT EXISTS item_votes(
     item INTEGER NOT NULL,
     identifier VARCHAR(255) NOT NULL,
     PRIMARY KEY(identifier)
+);
+
+CREATE TABLE IF NOT EXISTS messages(
+    poll_id INTEGER NOT NULL,
+    message VARCHAR(255) NOT NULL,
+    PRIMARY KEY(poll_id, message)
 );

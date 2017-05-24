@@ -1,5 +1,4 @@
 import sqlalchemy
-import json
 
 from flask import abort, jsonify, request
 
@@ -138,14 +137,11 @@ def get_all_polls(token_voter_id):
 def make_vote(token_voter_id, poll_id):
     if request.headers.get('Content-Type') == 'application/json':
         message = request.json.get('message')
-        vote = rsa_utils.decrypt(message)
-        vote = models.Vote(json.loads(vote))
         poll = models.PollsVotersDB.get_voter_poll(token_voter_id, poll_id)
 
         if poll:
             if models.PollsVotersDB.can_vote(poll.poll_id, token_voter_id):
-                models.PollsDB.vote(poll.poll_id, token_voter_id)
-                models.ItemIdentifiers.add(vote)
+                models.PollsDB.vote(poll.poll_id, token_voter_id, message)
                 return jsonify({
                     'message': 'vote registered'
                 }), 200
