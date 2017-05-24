@@ -21,8 +21,8 @@
         "ttl": 300
     },
 
-    "certs": {
-        "pubkey": "certs/rsa_4096_pub.pem",
-        "privkey": "certs/rsa_4096_priv.pem"
+    "rsa": {
+        "pubkey": "certs/rsa-pub.pem",
+        "privkey": "certs/rsa-priv.pem"
     }
 }

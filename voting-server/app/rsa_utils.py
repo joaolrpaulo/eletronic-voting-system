@@ -9,7 +9,7 @@ from app import configs
 config = configs.parser(sys.argv[1])
 
 # Import Private key for content decrypting
-with open(config.certs.privkey, mode = 'rb') as privatefile:
+with open(config.rsa.privkey, mode = 'rb') as privatefile:
     keydata = privatefile.read()
 privkey = RSA.importKey(keydata)
 

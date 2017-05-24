@@ -34,6 +34,7 @@ with open(config.database.schema, mode = 'r') as schema, sqlite3.connect(config.
 from app import errors
 # noinspection PyUnresolvedReferences
 from app import views
+# noinspection PyUnresolvedReferences
 from app import schedulers
 
 @app.before_first_request
