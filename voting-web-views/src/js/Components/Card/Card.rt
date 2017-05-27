@@ -25,12 +25,14 @@
           {item.item_identifiers.length}
           <div key={item2Index}  rt-repeat="item2 in item.item_identifiers">
             {item2}
+            <br/>
+            <br/>
           </div>
         </div>
       </div>
     </e.ModalBody>
     <e.ModalFooter>
-      <button type="button" class="btn btn-primary waves-effect waves-light" onClick={this.vote.bind(this)}>Vote</button>
+      <button rt-if="!this.props.ended" type="button" class="btn btn-primary waves-effect waves-light" onClick={this.vote.bind(this)}>Vote</button>
       <button type="button" class="btn btn-danger waves-effect waves-light" onClick={this.toggleModal.bind(this)}>Close</button>
     </e.ModalFooter>
   </e.Modal>

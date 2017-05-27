@@ -10,7 +10,8 @@ export default class Card extends React.Component {
         super();
 
         this.state = {
-            modalIsOpen: false
+            modalIsOpen: false,
+            identifier: null
         };
     }
 
@@ -26,6 +27,7 @@ export default class Card extends React.Component {
             item,
             identifier
         };
+        this.setState({ identifier });
         encryptedObject = JSON.stringify(encryptedObject);
         encryptedObject = encrypt.encrypt(encryptedObject);
         return encryptedObject;
@@ -63,7 +65,7 @@ export default class Card extends React.Component {
         axiosMethods.post('/vote/' + this.props.poll_id, body)
                     .then(response => {
                         setTimeout(() => {
-                            swal('Good job!', 'You have successfully voted for this poll', 'success');
+                            swal('Good job!', 'You have successfully voted for this poll, your token is ' + this.state.identifier, 'success');
                             this.setState({
                                 modalIsOpen: false
                             });
